@@ -6,10 +6,9 @@ import { v4 } from 'uuid';
 import { WorkspaceMigrationRunnerActionHandler } from 'src/engine/workspace-manager/workspace-migration/workspace-migration-runner/interfaces/workspace-migration-runner-action-handler-service.interface';
 
 import { ALL_METADATA_ENTITY_BY_METADATA_NAME } from 'src/engine/metadata-modules/flat-entity/constant/all-metadata-entity-by-metadata-name.constant';
-import { deriveComputedAsExpressionForFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-as-expression-for-flat-field-metadata.util';
-import { deriveComputedCurrencyCodeAsExpressionOrThrow } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-currency-code-as-expression.util';
-import { getFlatFieldMetadataComputedExpression } from 'src/engine/metadata-modules/flat-field-metadata/utils/get-flat-field-metadata-computed-expression.util';
+import { deriveComputedAsExpressionsForFlatFieldMetadataOrThrow } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-as-expression-for-flat-field-metadata.util';
 import { isCompositeFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-composite-flat-field-metadata.util';
+import { isComputedFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-computed-flat-field-metadata.util';
 import { isEnumFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-enum-flat-field-metadata.util';
 import { isFlatFieldMetadataOfType } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-flat-field-metadata-of-type.util';
 import { deriveSearchVectorAsExpressionForTsVectorField } from 'src/engine/metadata-modules/flat-search-field-metadata/utils/derive-search-vector-as-expression-for-ts-vector-field.util';
@@ -147,32 +146,18 @@ export class CreateObjectActionHandlerService extends WorkspaceMigrationRunnerAc
 
     const columnDefinitions = flatFieldMetadatas.flatMap(
       (flatFieldMetadata) => {
-        const computedExpression = getFlatFieldMetadataComputedExpression(
-          flatFieldMetadata.settings,
-        );
+        const isComputed = isComputedFlatFieldMetadata(flatFieldMetadata);
 
         return generateColumnDefinitions({
           flatFieldMetadata,
           flatObjectMetadata,
           workspaceId,
-          computedAsExpression:
-            computedExpression !== null
-              ? deriveComputedAsExpressionForFlatFieldMetadata({
-                  computedFlatFieldMetadata: flatFieldMetadata,
-                  siblingFlatFieldMetadatas: flatFieldMetadatas,
-                })
-              : undefined,
-          computedCurrencyCodeAsExpression:
-            computedExpression !== null &&
-            isFlatFieldMetadataOfType(
-              flatFieldMetadata,
-              FieldMetadataType.CURRENCY,
-            )
-              ? deriveComputedCurrencyCodeAsExpressionOrThrow({
-                  computedExpression,
-                  siblingFlatFieldMetadatas: flatFieldMetadatas,
-                })
-              : undefined,
+          computedAsExpressions: isComputed
+            ? deriveComputedAsExpressionsForFlatFieldMetadataOrThrow({
+                computedFlatFieldMetadata: flatFieldMetadata,
+                siblingFlatFieldMetadatas: flatFieldMetadatas,
+              })
+            : undefined,
           searchVectorAsExpression: isFlatFieldMetadataOfType(
             flatFieldMetadata,
             FieldMetadataType.TS_VECTOR,

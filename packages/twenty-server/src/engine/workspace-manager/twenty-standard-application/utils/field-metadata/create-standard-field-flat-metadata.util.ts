@@ -120,5 +120,6 @@ export const createStandardFieldFlatMetadata = <
     searchFieldMetadataIds: [],
     searchFieldMetadataUniversalIdentifiers: [],
     universalSettings: settings ?? null,
+    computation: null,
   };
 };

@@ -152,6 +152,7 @@ export const buildDefaultFlatFieldMetadatasForCustomObject = ({
           mainGroupByFieldMetadataViewUniversalIdentifiers: [],
           fieldPermissionUniversalIdentifiers: [],
           universalSettings: null,
+          computation: null,
           viewSortUniversalIdentifiers: [],
           searchFieldMetadataUniversalIdentifiers: [],
         };

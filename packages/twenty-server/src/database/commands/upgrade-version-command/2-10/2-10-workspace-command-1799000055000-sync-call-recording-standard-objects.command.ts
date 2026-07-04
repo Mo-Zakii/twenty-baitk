@@ -181,6 +181,7 @@ const buildLegacyCalendarEventRecordingPreferenceFieldMetadata = ({
   searchFieldMetadataIds: [],
   searchFieldMetadataUniversalIdentifiers: [],
   universalSettings: null,
+  computation: null,
 });
 
 @RegisteredWorkspaceCommand('2.10.0', 1799000055000)

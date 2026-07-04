@@ -1,5 +1,4 @@
 import { type FieldMetadataItem } from '@/object-metadata/types/FieldMetadataItem';
-import { getFieldComputedExpression } from '@/object-metadata/utils/getFieldComputedExpression';
 import { compositeTypeDefinitions } from 'twenty-shared/types';
 import {
   computeFormulaFieldReferenceKey,
@@ -11,12 +10,15 @@ import {
 export const buildFormulaFieldReferenceTypes = ({
   fieldMetadataItems,
 }: {
-  fieldMetadataItems: Pick<FieldMetadataItem, 'name' | 'type' | 'settings'>[];
+  fieldMetadataItems: Pick<
+    FieldMetadataItem,
+    'name' | 'type' | 'computation'
+  >[];
 }): Record<string, FormulaValueType> => {
   const fieldReferenceTypes: Record<string, FormulaValueType> = {};
 
   for (const fieldMetadataItem of fieldMetadataItems) {
-    if (isDefined(getFieldComputedExpression(fieldMetadataItem.settings))) {
+    if (isDefined(fieldMetadataItem.computation)) {
       continue;
     }
 

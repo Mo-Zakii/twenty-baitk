@@ -244,7 +244,9 @@ export const SettingsDataModelFieldSettingsFormCard = ({
   }
 
   if (
-    isDefined(getFieldComputedExpression(existingFieldMetadataItem?.settings))
+    isDefined(
+      getFieldComputedExpression(existingFieldMetadataItem?.computation),
+    )
   ) {
     return (
       <SettingsDataModelFieldFormulaSettingsFormCard

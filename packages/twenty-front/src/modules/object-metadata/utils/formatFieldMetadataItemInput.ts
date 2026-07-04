@@ -12,6 +12,7 @@ export const formatFieldMetadataItemInput = (
       | 'type'
       | 'options'
       | 'settings'
+      | 'computation'
       | 'isLabelSyncedWithName'
       | 'isUnique'
     >
@@ -25,6 +26,7 @@ export const formatFieldMetadataItemInput = (
     name: input.name?.trim(),
     options: input.options,
     settings: input.settings,
+    computation: input.computation,
     isLabelSyncedWithName: input.isLabelSyncedWithName,
     isUnique: input.isUnique,
   };

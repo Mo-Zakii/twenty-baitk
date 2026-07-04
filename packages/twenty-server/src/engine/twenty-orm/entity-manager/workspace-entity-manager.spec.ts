@@ -162,6 +162,7 @@ describe('WorkspaceEntityManager', () => {
       isUnique: false,
       options: null,
       settings: null,
+      computation: null,
       overrides: null,
       workspaceId: 'test-workspace-id',
       viewFieldIds: [],

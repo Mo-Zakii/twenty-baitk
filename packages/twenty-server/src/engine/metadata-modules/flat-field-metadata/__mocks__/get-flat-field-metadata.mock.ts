@@ -28,6 +28,7 @@ export const getFlatFieldMetadataMock = <T extends FieldMetadataType>(
     options: null,
     morphId: null,
     settings: null,
+    computation: null,
     description: 'default flat field metadata description',
     icon: 'icon',
     id: faker.string.uuid(),

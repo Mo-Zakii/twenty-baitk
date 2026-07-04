@@ -47,6 +47,7 @@ export const formatFieldMetadataItemAsFieldDefinition = ({
     targetFieldMetadataName: field.relation?.targetFieldMetadata?.name ?? '',
     options: field.options,
     settings: field.settings,
+    computation: field.computation,
     isNullable: field.isNullable,
     applicationId: field.applicationId,
     isUIEditable: field.isUIEditable ?? true,

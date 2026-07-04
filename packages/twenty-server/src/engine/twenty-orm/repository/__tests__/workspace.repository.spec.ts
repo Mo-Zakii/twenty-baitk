@@ -86,6 +86,7 @@ describe('WorkspaceRepository', () => {
       defaultValue: null,
       options: null,
       settings: null,
+      computation: null,
       morphId: null,
       overrides: null,
       applicationId: 'application-id',

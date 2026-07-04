@@ -23,6 +23,7 @@ export const useFieldMetadataItem = () => {
       | 'type'
       | 'options'
       | 'settings'
+      | 'computation'
       | 'isLabelSyncedWithName'
       | 'isUnique'
     > & {

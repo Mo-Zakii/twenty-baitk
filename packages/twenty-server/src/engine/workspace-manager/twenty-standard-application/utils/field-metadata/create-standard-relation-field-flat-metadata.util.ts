@@ -146,5 +146,6 @@ export const createStandardRelationFieldFlatMetadata = <
         junctionTargetFieldUniversalIdentifier,
       }),
     },
+    computation: null,
   };
 };

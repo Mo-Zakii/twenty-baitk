@@ -13,6 +13,7 @@ export const fromFlatFieldMetadataToFieldMetadataDto = (
     isNullable,
     isUnique,
     settings,
+    computation,
     id,
     universalIdentifier,
     label,
@@ -53,6 +54,7 @@ export const fromFlatFieldMetadataToFieldMetadataDto = (
     isNullable: isNullable ?? false,
     isUnique: isUnique ?? false,
     settings: settings ?? undefined,
+    computation: computation ?? undefined,
     morphId: morphId ?? undefined,
     applicationId: applicationId ?? undefined,
   };

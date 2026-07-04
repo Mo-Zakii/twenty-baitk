@@ -87,7 +87,7 @@ describe('isRecordFieldReadOnly', () => {
     expect(result).toBe(false);
   });
 
-  it('should return true when field settings carry a computed expression', () => {
+  it('should return true when field metadata carries a computation', () => {
     const result = isRecordFieldReadOnly({
       ...mockParams,
       fieldMetadataItem: {
@@ -101,8 +101,9 @@ describe('isRecordFieldReadOnly', () => {
         type: FieldMetadataType.NUMBER,
         metadata: {
           fieldName: 'computedValue',
-          settings: {
-            computedExpression: 'amount * 2',
+          computation: {
+            mode: 'EXPRESSION',
+            expression: 'amount * 2',
           },
         },
       },
@@ -111,7 +112,7 @@ describe('isRecordFieldReadOnly', () => {
     expect(result).toBe(true);
   });
 
-  it('should return false when field settings have no computed expression', () => {
+  it('should return false when field metadata has no computation', () => {
     const result = isRecordFieldReadOnly({
       ...mockParams,
       fieldMetadataItem: {

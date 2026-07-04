@@ -3,8 +3,7 @@ import { FieldMetadataType } from 'twenty-shared/types';
 
 import { getFlatFieldMetadataMock } from 'src/engine/metadata-modules/flat-field-metadata/__mocks__/get-flat-field-metadata.mock';
 import { type FlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/types/flat-field-metadata.type';
-import { deriveComputedAsExpressionForFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-as-expression-for-flat-field-metadata.util';
-import { deriveComputedCurrencyCodeAsExpressionOrThrow } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-currency-code-as-expression.util';
+import { deriveComputedAsExpressionsForFlatFieldMetadataOrThrow } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-as-expression-for-flat-field-metadata.util';
 
 const objectMetadataId = faker.string.uuid();
 
@@ -22,11 +21,11 @@ const getSiblingFlatFieldMetadata = ({
     name,
   });
 
-const getComputedFlatFieldMetadata = ({
-  computedExpression,
+const getComputedFlatFieldMetadataWithExpression = ({
+  expression,
   type,
 }: {
-  computedExpression: string;
+  expression: string;
   type: FieldMetadataType;
 }): FlatFieldMetadata =>
   getFlatFieldMetadataMock({
@@ -34,10 +33,25 @@ const getComputedFlatFieldMetadata = ({
     objectMetadataId,
     type,
     name: 'computedField',
-    settings: { computedExpression },
+    computation: { mode: 'EXPRESSION', expression },
   });
 
-describe('deriveComputedAsExpressionForFlatFieldMetadata', () => {
+const getComputedFlatFieldMetadataWithExpressionBySubField = ({
+  expressionBySubField,
+  type,
+}: {
+  expressionBySubField: Record<string, string>;
+  type: FieldMetadataType;
+}): FlatFieldMetadata =>
+  getFlatFieldMetadataMock({
+    universalIdentifier: faker.string.uuid(),
+    objectMetadataId,
+    type,
+    name: 'computedField',
+    computation: { mode: 'EXPRESSION_BY_SUB_FIELD', expressionBySubField },
+  });
+
+describe('deriveComputedAsExpressionsForFlatFieldMetadataOrThrow', () => {
   const siblingFlatFieldMetadatas = [
     getSiblingFlatFieldMetadata({
       name: 'amount',
@@ -50,54 +64,96 @@ describe('deriveComputedAsExpressionForFlatFieldMetadata', () => {
     }),
   ];
 
-  it('should transpile a computed expression over scalar sibling fields', () => {
+  it('should transpile a NUMBER expression computation to a scalar asExpression', () => {
     expect(
-      deriveComputedAsExpressionForFlatFieldMetadata({
-        computedFlatFieldMetadata: getComputedFlatFieldMetadata({
-          computedExpression: 'ROUND(amount * 0.88, 2)',
+      deriveComputedAsExpressionsForFlatFieldMetadataOrThrow({
+        computedFlatFieldMetadata: getComputedFlatFieldMetadataWithExpression({
+          expression: 'ROUND(amount * 0.88, 2)',
           type: FieldMetadataType.NUMBER,
         }),
         siblingFlatFieldMetadatas,
       }),
-    ).toBe(
-      'ROUND((("amount" * 0.88))::numeric, (2)::integer)::double precision',
-    );
+    ).toEqual({
+      asExpression:
+        'ROUND((("amount" * 0.88))::numeric, (2)::integer)::double precision',
+    });
   });
 
   it('should map composite sub-field references to flattened column names', () => {
     expect(
-      deriveComputedAsExpressionForFlatFieldMetadata({
-        computedFlatFieldMetadata: getComputedFlatFieldMetadata({
-          computedExpression: 'annualRecurringRevenue.amountMicros / 1000000',
+      deriveComputedAsExpressionsForFlatFieldMetadataOrThrow({
+        computedFlatFieldMetadata: getComputedFlatFieldMetadataWithExpression({
+          expression: 'annualRecurringRevenue.amountMicros / 1000000',
           type: FieldMetadataType.NUMBER,
         }),
         siblingFlatFieldMetadatas,
       }),
-    ).toBe('("annualRecurringRevenueAmountMicros" / NULLIF(1000000, 0))');
+    ).toEqual({
+      asExpression:
+        '("annualRecurringRevenueAmountMicros" / NULLIF(1000000, 0))',
+    });
+  });
+
+  it('should derive amountMicros and currencyCode for a CURRENCY expression shorthand', () => {
+    expect(
+      deriveComputedAsExpressionsForFlatFieldMetadataOrThrow({
+        computedFlatFieldMetadata: getComputedFlatFieldMetadataWithExpression({
+          expression: 'annualRecurringRevenue.amountMicros * 2',
+          type: FieldMetadataType.CURRENCY,
+        }),
+        siblingFlatFieldMetadatas,
+      }),
+    ).toEqual({
+      asExpressionByCompositePropertyName: {
+        amountMicros: '("annualRecurringRevenueAmountMicros" * 2)',
+        currencyCode: '"annualRecurringRevenueCurrencyCode"',
+      },
+    });
+  });
+
+  it('should derive one asExpression per sub field for a FULL_NAME EXPRESSION_BY_SUB_FIELD computation', () => {
+    expect(
+      deriveComputedAsExpressionsForFlatFieldMetadataOrThrow({
+        computedFlatFieldMetadata:
+          getComputedFlatFieldMetadataWithExpressionBySubField({
+            expressionBySubField: {
+              firstName: 'name',
+              lastName: 'name',
+            },
+            type: FieldMetadataType.FULL_NAME,
+          }),
+        siblingFlatFieldMetadatas,
+      }),
+    ).toEqual({
+      asExpressionByCompositePropertyName: {
+        firstName: '"name"',
+        lastName: '"name"',
+      },
+    });
   });
 
   it('should reject an expression whose inferred type differs from the field type', () => {
     expect(() =>
-      deriveComputedAsExpressionForFlatFieldMetadata({
-        computedFlatFieldMetadata: getComputedFlatFieldMetadata({
-          computedExpression: 'CONCAT(name, "!")',
+      deriveComputedAsExpressionsForFlatFieldMetadataOrThrow({
+        computedFlatFieldMetadata: getComputedFlatFieldMetadataWithExpression({
+          expression: 'CONCAT(name, "!")',
           type: FieldMetadataType.NUMBER,
         }),
         siblingFlatFieldMetadatas,
       }),
-    ).toThrow('Expression returns TEXT but the field expects NUMBER');
+    ).toThrow('Expression returns TEXT but expects NUMBER');
   });
 
   it('should reject an expression referencing another computed field', () => {
-    const computedSibling = getComputedFlatFieldMetadata({
-      computedExpression: 'amount * 2',
+    const computedSibling = getComputedFlatFieldMetadataWithExpression({
+      expression: 'amount * 2',
       type: FieldMetadataType.NUMBER,
     });
 
     expect(() =>
-      deriveComputedAsExpressionForFlatFieldMetadata({
-        computedFlatFieldMetadata: getComputedFlatFieldMetadata({
-          computedExpression: 'computedField + 1',
+      deriveComputedAsExpressionsForFlatFieldMetadataOrThrow({
+        computedFlatFieldMetadata: getComputedFlatFieldMetadataWithExpression({
+          expression: 'computedField + 1',
           type: FieldMetadataType.NUMBER,
         }),
         siblingFlatFieldMetadatas: [
@@ -110,9 +166,9 @@ describe('deriveComputedAsExpressionForFlatFieldMetadata', () => {
 
   it('should reject an expression referencing a non-existent field', () => {
     expect(() =>
-      deriveComputedAsExpressionForFlatFieldMetadata({
-        computedFlatFieldMetadata: getComputedFlatFieldMetadata({
-          computedExpression: 'unknownField * 2',
+      deriveComputedAsExpressionsForFlatFieldMetadataOrThrow({
+        computedFlatFieldMetadata: getComputedFlatFieldMetadataWithExpression({
+          expression: 'unknownField * 2',
           type: FieldMetadataType.NUMBER,
         }),
         siblingFlatFieldMetadatas,
@@ -120,12 +176,16 @@ describe('deriveComputedAsExpressionForFlatFieldMetadata', () => {
     ).toThrow("Unknown field 'unknownField'");
   });
 
-  it('should derive the currency code column from the single referenced currency sibling', () => {
-    expect(
-      deriveComputedCurrencyCodeAsExpressionOrThrow({
-        computedExpression: 'annualRecurringRevenue.amountMicros * 2',
+  it('should reject an unknown sub field for an EXPRESSION_BY_SUB_FIELD computation', () => {
+    expect(() =>
+      deriveComputedAsExpressionsForFlatFieldMetadataOrThrow({
+        computedFlatFieldMetadata:
+          getComputedFlatFieldMetadataWithExpressionBySubField({
+            expressionBySubField: { unknownSubField: 'name' },
+            type: FieldMetadataType.FULL_NAME,
+          }),
         siblingFlatFieldMetadatas,
       }),
-    ).toBe('"annualRecurringRevenueCurrencyCode"');
+    ).toThrow('does not exist on FULL_NAME');
   });
 });

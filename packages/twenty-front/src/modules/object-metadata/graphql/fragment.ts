@@ -69,6 +69,7 @@ export const OBJECT_METADATA_FRAGMENT = gql`
       defaultValue
       options
       settings
+      computation
       isLabelSyncedWithName
       morphId
       applicationId

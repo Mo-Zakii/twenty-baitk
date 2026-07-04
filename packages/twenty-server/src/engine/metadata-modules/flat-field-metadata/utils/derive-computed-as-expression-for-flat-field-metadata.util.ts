@@ -1,67 +1,191 @@
+import { FieldMetadataType } from 'twenty-shared/types';
 import {
   CustomError,
   getExpectedFormulaValueTypeForComputedFieldType,
   inferFormulaReturnTypeOrThrow,
   isComputableFieldMetadataType,
+  isDefined,
+  mapFieldMetadataTypeToFormulaValueType,
   parseFormulaExpressionOrThrow,
   transpileFormulaToPostgresExpressionOrThrow,
+  type FormulaValueType,
 } from 'twenty-shared/utils';
 
-import { buildFormulaFieldReferencesContext } from 'src/engine/metadata-modules/flat-field-metadata/utils/build-formula-field-references-context.util';
-import { getFlatFieldMetadataComputedExpression } from 'src/engine/metadata-modules/flat-field-metadata/utils/get-flat-field-metadata-computed-expression.util';
+import { getCompositeTypeOrThrow } from 'src/engine/metadata-modules/field-metadata/utils/get-composite-type-or-throw.util';
+import {
+  buildFormulaFieldReferencesContext,
+  type FormulaFieldReferencesContext,
+} from 'src/engine/metadata-modules/flat-field-metadata/utils/build-formula-field-references-context.util';
+import { deriveComputedCurrencyCodeAsExpressionOrThrow } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-currency-code-as-expression.util';
 import { type FlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/types/flat-field-metadata.type';
 
-export const deriveComputedAsExpressionForFlatFieldMetadata = ({
+export type ComputedAsExpressions = {
+  asExpression?: string;
+  asExpressionByCompositePropertyName?: Record<string, string>;
+};
+
+// Transpiles a field's computation into Postgres generated-column expressions:
+// EXPRESSION fills the scalar column (for CURRENCY: amountMicros plus a derived
+// currencyCode copy); EXPRESSION_BY_SUB_FIELD fills one sub-column per entry
+export const deriveComputedAsExpressionsForFlatFieldMetadataOrThrow = ({
   computedFlatFieldMetadata,
   siblingFlatFieldMetadatas,
 }: {
   computedFlatFieldMetadata: FlatFieldMetadata;
   siblingFlatFieldMetadatas: FlatFieldMetadata[];
-}): string => {
-  const computedExpression = getFlatFieldMetadataComputedExpression(
-    computedFlatFieldMetadata.settings,
-  );
+}): ComputedAsExpressions => {
+  const { computation } = computedFlatFieldMetadata;
 
-  if (computedExpression === null) {
+  if (!isDefined(computation)) {
     throw new CustomError(
-      `Field ${computedFlatFieldMetadata.name} has no computed expression`,
+      `Field ${computedFlatFieldMetadata.name} has no computation`,
       'COMPUTED_EXPRESSION_MISSING',
     );
   }
 
-  if (!isComputableFieldMetadataType(computedFlatFieldMetadata.type)) {
-    throw new CustomError(
-      `Field type ${computedFlatFieldMetadata.type} does not support computed expressions`,
-      'COMPUTED_EXPRESSION_UNSUPPORTED_TYPE',
-    );
+  const referencesContext = buildFormulaFieldReferencesContext({
+    siblingFlatFieldMetadatas,
+  });
+
+  if (computation.mode === 'EXPRESSION') {
+    return deriveExpressionComputation({
+      computedFlatFieldMetadata,
+      expression: computation.expression,
+      referencesContext,
+      siblingFlatFieldMetadatas,
+    });
   }
 
-  const formulaAstNode = parseFormulaExpressionOrThrow(computedExpression);
-  const { fieldReferenceTypes, columnNameByFieldReferenceKey } =
-    buildFormulaFieldReferencesContext({ siblingFlatFieldMetadatas });
+  return deriveExpressionBySubFieldComputation({
+    computedFlatFieldMetadata,
+    expressionBySubField: computation.expressionBySubField,
+    referencesContext,
+  });
+};
+
+const transpileExpressionOrThrow = ({
+  expression,
+  expectedReturnType,
+  referencesContext,
+  errorContext,
+}: {
+  expression: string;
+  expectedReturnType: FormulaValueType;
+  referencesContext: FormulaFieldReferencesContext;
+  errorContext: string;
+}): string => {
+  const formulaAstNode = parseFormulaExpressionOrThrow(expression);
 
   const inferredReturnType = inferFormulaReturnTypeOrThrow({
     node: formulaAstNode,
-    fieldReferenceTypes,
+    fieldReferenceTypes: referencesContext.fieldReferenceTypes,
   });
-
-  const expectedReturnType = getExpectedFormulaValueTypeForComputedFieldType(
-    computedFlatFieldMetadata.type,
-  );
 
   if (
     inferredReturnType !== 'NULL' &&
     inferredReturnType !== expectedReturnType
   ) {
     throw new CustomError(
-      `Expression returns ${inferredReturnType} but the field expects ${expectedReturnType}`,
+      `${errorContext} returns ${inferredReturnType} but expects ${expectedReturnType}`,
       'COMPUTED_EXPRESSION_TYPE_ERROR',
     );
   }
 
   return transpileFormulaToPostgresExpressionOrThrow({
     node: formulaAstNode,
-    fieldReferenceTypes,
-    columnNameByFieldReferenceKey,
+    fieldReferenceTypes: referencesContext.fieldReferenceTypes,
+    columnNameByFieldReferenceKey:
+      referencesContext.columnNameByFieldReferenceKey,
   });
+};
+
+const deriveExpressionComputation = ({
+  computedFlatFieldMetadata,
+  expression,
+  referencesContext,
+  siblingFlatFieldMetadatas,
+}: {
+  computedFlatFieldMetadata: FlatFieldMetadata;
+  expression: string;
+  referencesContext: FormulaFieldReferencesContext;
+  siblingFlatFieldMetadatas: FlatFieldMetadata[];
+}): ComputedAsExpressions => {
+  if (!isComputableFieldMetadataType(computedFlatFieldMetadata.type)) {
+    throw new CustomError(
+      `Field type ${computedFlatFieldMetadata.type} does not support expression computation`,
+      'COMPUTED_EXPRESSION_UNSUPPORTED_TYPE',
+    );
+  }
+
+  const transpiledExpression = transpileExpressionOrThrow({
+    expression,
+    expectedReturnType: getExpectedFormulaValueTypeForComputedFieldType(
+      computedFlatFieldMetadata.type,
+    ),
+    referencesContext,
+    errorContext: 'Expression',
+  });
+
+  if (computedFlatFieldMetadata.type === FieldMetadataType.CURRENCY) {
+    return {
+      asExpressionByCompositePropertyName: {
+        amountMicros: transpiledExpression,
+        currencyCode: deriveComputedCurrencyCodeAsExpressionOrThrow({
+          computedExpression: expression,
+          siblingFlatFieldMetadatas,
+        }),
+      },
+    };
+  }
+
+  return { asExpression: transpiledExpression };
+};
+
+const deriveExpressionBySubFieldComputation = ({
+  computedFlatFieldMetadata,
+  expressionBySubField,
+  referencesContext,
+}: {
+  computedFlatFieldMetadata: FlatFieldMetadata;
+  expressionBySubField: Record<string, string>;
+  referencesContext: FormulaFieldReferencesContext;
+}): ComputedAsExpressions => {
+  const compositeType = getCompositeTypeOrThrow(computedFlatFieldMetadata.type);
+  const asExpressionByCompositePropertyName: Record<string, string> = {};
+
+  for (const [subFieldName, expression] of Object.entries(
+    expressionBySubField,
+  )) {
+    const compositeProperty = compositeType.properties.find(
+      (property) => property.name === subFieldName,
+    );
+
+    if (!isDefined(compositeProperty)) {
+      throw new CustomError(
+        `Sub field ${subFieldName} does not exist on ${computedFlatFieldMetadata.type}`,
+        'COMPUTED_EXPRESSION_UNSUPPORTED_TYPE',
+      );
+    }
+
+    const expectedReturnType = mapFieldMetadataTypeToFormulaValueType(
+      compositeProperty.type,
+    );
+
+    if (!isDefined(expectedReturnType)) {
+      throw new CustomError(
+        `Sub field ${subFieldName} of ${computedFlatFieldMetadata.type} is not a scalar and cannot be computed`,
+        'COMPUTED_EXPRESSION_UNSUPPORTED_TYPE',
+      );
+    }
+
+    asExpressionByCompositePropertyName[subFieldName] =
+      transpileExpressionOrThrow({
+        expression,
+        expectedReturnType,
+        referencesContext,
+        errorContext: `Sub field ${subFieldName} expression`,
+      });
+  }
+
+  return { asExpressionByCompositePropertyName };
 };

@@ -17,13 +17,12 @@ import { computeCompositeColumnName } from 'src/engine/metadata-modules/field-me
 import { getCompositeTypeOrThrow } from 'src/engine/metadata-modules/field-metadata/utils/get-composite-type-or-throw.util';
 import { findFlatEntityByIdInFlatEntityMapsOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-id-in-flat-entity-maps-or-throw.util';
 import { findManyFlatEntityByIdInFlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/utils/find-many-flat-entity-by-id-in-flat-entity-maps.util';
-import { deriveComputedAsExpressionForFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-as-expression-for-flat-field-metadata.util';
-import { deriveComputedCurrencyCodeAsExpressionOrThrow } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-currency-code-as-expression.util';
-import { getFlatFieldMetadataComputedExpression } from 'src/engine/metadata-modules/flat-field-metadata/utils/get-flat-field-metadata-computed-expression.util';
+import { deriveComputedAsExpressionsForFlatFieldMetadataOrThrow } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-as-expression-for-flat-field-metadata.util';
 import { findFlatEntityByUniversalIdentifierOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-universal-identifier-or-throw.util';
 import { findFieldRelatedIndexes } from 'src/engine/metadata-modules/flat-field-metadata/utils/find-field-related-index.util';
 import { FlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/types/flat-field-metadata.type';
 import { isCompositeFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-composite-flat-field-metadata.util';
+import { isComputedFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-computed-flat-field-metadata.util';
 import { isEnumFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-enum-flat-field-metadata.util';
 import { isFlatFieldMetadataOfType } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-flat-field-metadata-of-type.util';
 import { isMorphOrRelationFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-morph-or-relation-flat-field-metadata.util';
@@ -357,14 +356,18 @@ export class UpdateFieldActionHandlerService extends WorkspaceMigrationRunnerAct
       };
     }
 
-    const computedExpression =
-      update.settings !== undefined
-        ? getFlatFieldMetadataComputedExpression(
-            optimisticFlatFieldMetadata.settings,
-          )
-        : null;
+    if (update.computation !== undefined) {
+      optimisticFlatFieldMetadata = {
+        ...optimisticFlatFieldMetadata,
+        computation: update.computation,
+      };
+    }
 
-    if (computedExpression !== null) {
+    const shouldRegenerateComputedColumns =
+      update.computation !== undefined &&
+      isComputedFlatFieldMetadata(optimisticFlatFieldMetadata);
+
+    if (shouldRegenerateComputedColumns) {
       // Postgres has no ALTER for a generated expression: drop and recreate the
       // column, letting Postgres recompute every row.
       const siblingFlatFieldMetadatas = findManyFlatEntityByIdInFlatEntityMaps({
@@ -376,19 +379,11 @@ export class UpdateFieldActionHandlerService extends WorkspaceMigrationRunnerAct
         flatFieldMetadata: optimisticFlatFieldMetadata,
         flatObjectMetadata,
         workspaceId,
-        computedAsExpression: deriveComputedAsExpressionForFlatFieldMetadata({
-          computedFlatFieldMetadata: optimisticFlatFieldMetadata,
-          siblingFlatFieldMetadatas,
-        }),
-        computedCurrencyCodeAsExpression: isFlatFieldMetadataOfType(
-          optimisticFlatFieldMetadata,
-          FieldMetadataType.CURRENCY,
-        )
-          ? deriveComputedCurrencyCodeAsExpressionOrThrow({
-              computedExpression,
-              siblingFlatFieldMetadatas,
-            })
-          : undefined,
+        computedAsExpressions:
+          deriveComputedAsExpressionsForFlatFieldMetadataOrThrow({
+            computedFlatFieldMetadata: optimisticFlatFieldMetadata,
+            siblingFlatFieldMetadatas,
+          }),
       });
 
       await this.workspaceSchemaManagerService.columnManager.dropColumns({

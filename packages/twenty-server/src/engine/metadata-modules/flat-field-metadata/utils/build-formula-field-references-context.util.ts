@@ -1,8 +1,4 @@
 import {
-  type AllFieldMetadataSettings,
-  type FieldMetadataUniversalSettings,
-} from 'twenty-shared/types';
-import {
   computeFormulaFieldReferenceKey,
   isDefined,
   mapFieldMetadataTypeToFormulaValueType,
@@ -15,15 +11,12 @@ import {
 } from 'src/engine/metadata-modules/field-metadata/utils/compute-column-name.util';
 import { getCompositeTypeOrThrow } from 'src/engine/metadata-modules/field-metadata/utils/get-composite-type-or-throw.util';
 import { isCompositeFieldMetadataType } from 'src/engine/metadata-modules/field-metadata/utils/is-composite-field-metadata-type.util';
-import { getFlatFieldMetadataComputedExpression } from 'src/engine/metadata-modules/flat-field-metadata/utils/get-flat-field-metadata-computed-expression.util';
 import { type FlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/types/flat-field-metadata.type';
 
 export type FormulaReferenceSourceFieldMetadata = Pick<
   FlatFieldMetadata,
-  'name' | 'type'
-> & {
-  settings: AllFieldMetadataSettings | FieldMetadataUniversalSettings | null;
-};
+  'name' | 'type' | 'computation'
+>;
 
 export type FormulaFieldReferencesContext = {
   fieldReferenceTypes: Record<string, FormulaValueType>;
@@ -40,10 +33,7 @@ export const buildFormulaFieldReferencesContext = ({
 
   for (const flatFieldMetadata of siblingFlatFieldMetadatas) {
     // Generated columns cannot reference other generated columns
-    if (
-      getFlatFieldMetadataComputedExpression(flatFieldMetadata.settings) !==
-      null
-    ) {
+    if (isDefined(flatFieldMetadata.computation)) {
       continue;
     }
 

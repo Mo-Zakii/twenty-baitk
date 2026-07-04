@@ -4,7 +4,6 @@ import { dispatchObjectRecordOperationBrowserEvent } from '@/browser-event/utils
 import { useApolloCoreClient } from '@/object-metadata/hooks/useApolloCoreClient';
 import { useObjectMetadataItems } from '@/object-metadata/hooks/useObjectMetadataItems';
 import { generateUpdateOneRecordMutation } from '@/object-metadata/utils/generateUpdateOneRecordMutation';
-import { getFieldComputedExpression } from '@/object-metadata/utils/getFieldComputedExpression';
 import { getObjectTypename } from '@/object-record/cache/utils/getObjectTypename';
 import { getRecordFromCache } from '@/object-record/cache/utils/getRecordFromCache';
 import { getRecordFromRecordNode } from '@/object-record/cache/utils/getRecordFromRecordNode';
@@ -101,7 +100,7 @@ export const useUpdateOneRecord = () => {
     });
 
     const objectMetadataItemHasComputedFields = objectMetadataItem.fields.some(
-      ({ settings }) => isDefined(getFieldComputedExpression(settings)),
+      ({ computation }) => computation?.mode === 'EXPRESSION',
     );
 
     const optimisticRecordInputWithFormulaFieldValues =

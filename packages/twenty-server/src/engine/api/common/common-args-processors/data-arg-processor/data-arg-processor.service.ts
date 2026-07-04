@@ -62,7 +62,7 @@ import { FlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/types/fl
 import { findFlatEntityByIdInFlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-id-in-flat-entity-maps.util';
 import { FlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/types/flat-field-metadata.type';
 import { buildFieldMapsFromFlatObjectMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/build-field-maps-from-flat-object-metadata.util';
-import { getFlatFieldMetadataComputedExpression } from 'src/engine/metadata-modules/flat-field-metadata/utils/get-flat-field-metadata-computed-expression.util';
+import { isComputedFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-computed-flat-field-metadata.util';
 import { FlatObjectMetadata } from 'src/engine/metadata-modules/flat-object-metadata/types/flat-object-metadata.type';
 
 @Injectable()
@@ -178,9 +178,7 @@ export class DataArgProcessorService {
     flatFieldMetadataMaps: FlatEntityMaps<FlatFieldMetadata>,
     flatObjectMetadataMaps: FlatEntityMaps<FlatObjectMetadata>,
   ): Promise<unknown> {
-    if (
-      getFlatFieldMetadataComputedExpression(fieldMetadata.settings) !== null
-    ) {
+    if (isComputedFlatFieldMetadata(fieldMetadata)) {
       throw new CommonQueryRunnerException(
         `${key} computed field does not support write operations`,
         CommonQueryRunnerExceptionCode.INVALID_ARGS_DATA,

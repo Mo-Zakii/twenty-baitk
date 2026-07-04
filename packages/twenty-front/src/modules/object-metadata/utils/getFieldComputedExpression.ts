@@ -1,17 +1,12 @@
 import { type FieldMetadataItem } from '@/object-metadata/types/FieldMetadataItem';
 import { type FieldMetadata } from '@/object-record/record-field/ui/types/FieldMetadata';
-import { isNonEmptyString } from '@sniptt/guards';
 import { isDefined } from 'twenty-shared/utils';
 
 export const getFieldComputedExpression = (
-  settings: FieldMetadataItem['settings'] | FieldMetadata['settings'],
+  computation: FieldMetadataItem['computation'] | FieldMetadata['computation'],
 ): string | null => {
-  if (
-    isDefined(settings) &&
-    'computedExpression' in settings &&
-    isNonEmptyString(settings.computedExpression)
-  ) {
-    return settings.computedExpression;
+  if (isDefined(computation) && computation.mode === 'EXPRESSION') {
+    return computation.expression;
   }
 
   return null;

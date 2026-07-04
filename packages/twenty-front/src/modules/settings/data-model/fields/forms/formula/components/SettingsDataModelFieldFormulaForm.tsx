@@ -24,13 +24,14 @@ import {
 import { IconEye } from 'twenty-ui/icon';
 
 export const settingsDataModelFieldFormulaFormSchema = z.object({
-  settings: z.object({
-    computedExpression: z
+  computation: z.object({
+    mode: z.literal('EXPRESSION'),
+    expression: z
       .string()
       .min(1)
-      .superRefine((computedExpression, ctx) => {
+      .superRefine((expression, ctx) => {
         try {
-          parseFormulaExpressionOrThrow(computedExpression);
+          parseFormulaExpressionOrThrow(expression);
         } catch (error) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -119,29 +120,31 @@ export const SettingsDataModelFieldFormulaForm = ({
       />
       <Separator />
       <Controller
-        name="settings"
+        name="computation"
         defaultValue={{
-          computedExpression:
-            getFieldComputedExpression(fieldMetadataItem?.settings) ?? '',
+          mode: 'EXPRESSION',
+          expression:
+            getFieldComputedExpression(fieldMetadataItem?.computation) ?? '',
         }}
         control={control}
         render={({ field: { onChange, value } }) => {
-          const computedExpression = value?.computedExpression ?? '';
+          const expression =
+            value?.mode === 'EXPRESSION' ? value.expression : '';
 
           return (
             <>
               <SettingsDataModelFieldFormulaExpressionEditor
-                expression={computedExpression}
+                expression={expression}
                 expectedFormulaValueType={expectedFormulaValueType}
                 fieldReferenceTypes={fieldReferenceTypes}
                 onChange={(newExpression) =>
-                  onChange({ computedExpression: newExpression })
+                  onChange({ mode: 'EXPRESSION', expression: newExpression })
                 }
                 disabled={disabled}
               />
               <SettingsDataModelFieldFormulaPreview
                 objectNameSingular={objectNameSingular}
-                expression={computedExpression}
+                expression={expression}
               />
             </>
           );

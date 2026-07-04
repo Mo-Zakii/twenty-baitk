@@ -5,6 +5,7 @@ import { type CurrencyCode } from 'twenty-shared/constants';
 import {
   ConnectedAccountProvider,
   type AllowedAddressSubField,
+  type FieldMetadataComputation,
   type FieldMetadataMultiItemSettings,
   type FileCategory,
 } from 'twenty-shared/types';
@@ -17,23 +18,20 @@ type BaseFieldMetadata = {
   objectMetadataNameSingular?: string;
   applicationId?: string | null;
   isUIEditable?: boolean;
+  computation?: FieldMetadataComputation | null;
 };
 
 export type FieldUuidMetadata = BaseFieldMetadata & {
   settings?: null;
 };
 
-export type FieldComputedMetadataSettings = {
-  computedExpression?: string;
-};
-
 export type FieldBooleanMetadata = BaseFieldMetadata & {
-  settings?: FieldComputedMetadataSettings | null;
+  settings?: null;
 };
 
 export type FieldTextMetadata = BaseFieldMetadata & {
   placeHolder: string;
-  settings?: FieldComputedMetadataSettings & {
+  settings?: {
     displayedMaxRows?: number;
   };
 };
@@ -58,7 +56,7 @@ export type FieldDateMetadataSettings =
 
 export type FieldDateTimeMetadata = BaseFieldMetadata & {
   placeHolder: string;
-  settings?: FieldDateMetadataSettings & FieldComputedMetadataSettings;
+  settings?: FieldDateMetadataSettings;
 };
 
 export type FieldDateMetadata = BaseFieldMetadata & {
@@ -76,7 +74,7 @@ export type FieldNumberVariant = (typeof FIELD_NUMBER_VARIANT)[number];
 export type FieldNumberMetadata = BaseFieldMetadata & {
   placeHolder: string;
   isPositive?: boolean;
-  settings?: FieldComputedMetadataSettings & {
+  settings?: {
     decimals?: number;
     type?: FieldNumberVariant;
   };
@@ -94,7 +92,7 @@ export type FieldLinksMetadata = BaseFieldMetadata & {
 export type FieldCurrencyMetadata = BaseFieldMetadata & {
   placeHolder: string;
   isPositive?: boolean;
-  settings?: FieldComputedMetadataSettings & {
+  settings?: {
     format: FieldCurrencyFormat | null;
     decimals?: number;
   };

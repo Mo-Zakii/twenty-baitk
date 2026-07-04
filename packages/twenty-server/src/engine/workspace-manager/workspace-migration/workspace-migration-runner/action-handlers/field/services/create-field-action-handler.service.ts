@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { FieldMetadataType, RelationType } from 'twenty-shared/types';
+import { RelationType } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 import { type QueryRunner } from 'typeorm';
 import { v4 } from 'uuid';
@@ -12,10 +12,8 @@ import { type MetadataFlatEntityMaps } from 'src/engine/metadata-modules/flat-en
 import { findFlatEntityByIdInFlatEntityMapsOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-id-in-flat-entity-maps-or-throw.util';
 import { findManyFlatEntityByIdInFlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/utils/find-many-flat-entity-by-id-in-flat-entity-maps.util';
 import { type FlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/types/flat-field-metadata.type';
-import { deriveComputedAsExpressionForFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-as-expression-for-flat-field-metadata.util';
-import { deriveComputedCurrencyCodeAsExpressionOrThrow } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-currency-code-as-expression.util';
-import { getFlatFieldMetadataComputedExpression } from 'src/engine/metadata-modules/flat-field-metadata/utils/get-flat-field-metadata-computed-expression.util';
-import { isFlatFieldMetadataOfType } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-flat-field-metadata-of-type.util';
+import { deriveComputedAsExpressionsForFlatFieldMetadataOrThrow } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-as-expression-for-flat-field-metadata.util';
+import { isComputedFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-computed-flat-field-metadata.util';
 import { isMorphOrRelationFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-morph-or-relation-flat-field-metadata.util';
 import { type FlatObjectMetadata } from 'src/engine/metadata-modules/flat-object-metadata/types/flat-object-metadata.type';
 import { WorkspaceSchemaManagerService } from 'src/engine/twenty-orm/workspace-schema-manager/workspace-schema-manager.service';
@@ -202,36 +200,24 @@ export class CreateFieldActionHandlerService extends WorkspaceMigrationRunnerAct
       operation: EnumOperation.CREATE,
     });
 
-    const computedExpression = getFlatFieldMetadataComputedExpression(
-      flatFieldMetadata.settings,
-    );
-    const siblingFlatFieldMetadatas =
-      computedExpression !== null
-        ? findManyFlatEntityByIdInFlatEntityMaps({
-            flatEntityMaps: flatFieldMetadataMaps,
-            flatEntityIds: flatObjectMetadata.fieldIds,
-          })
-        : [];
+    const isComputed = isComputedFlatFieldMetadata(flatFieldMetadata);
+    const siblingFlatFieldMetadatas = isComputed
+      ? findManyFlatEntityByIdInFlatEntityMaps({
+          flatEntityMaps: flatFieldMetadataMaps,
+          flatEntityIds: flatObjectMetadata.fieldIds,
+        })
+      : [];
 
     const columnDefinitions = generateColumnDefinitions({
       flatFieldMetadata,
       flatObjectMetadata,
       workspaceId,
-      computedAsExpression:
-        computedExpression !== null
-          ? deriveComputedAsExpressionForFlatFieldMetadata({
-              computedFlatFieldMetadata: flatFieldMetadata,
-              siblingFlatFieldMetadatas,
-            })
-          : undefined,
-      computedCurrencyCodeAsExpression:
-        computedExpression !== null &&
-        isFlatFieldMetadataOfType(flatFieldMetadata, FieldMetadataType.CURRENCY)
-          ? deriveComputedCurrencyCodeAsExpressionOrThrow({
-              computedExpression,
-              siblingFlatFieldMetadatas,
-            })
-          : undefined,
+      computedAsExpressions: isComputed
+        ? deriveComputedAsExpressionsForFlatFieldMetadataOrThrow({
+            computedFlatFieldMetadata: flatFieldMetadata,
+            siblingFlatFieldMetadatas,
+          })
+        : undefined,
     });
 
     await executeBatchEnumOperations({

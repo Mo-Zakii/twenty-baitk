@@ -1,5 +1,4 @@
 import { type FieldMetadataItem } from '@/object-metadata/types/FieldMetadataItem';
-import { getFieldComputedExpression } from '@/object-metadata/utils/getFieldComputedExpression';
 import { isFieldMetadataReadOnlyByPermissions } from '@/object-record/read-only/utils/internal/isFieldMetadataReadOnlyByPermissions';
 import { isOneToManyRelationFieldReadOnlyDueToTargetUpdatePermission } from '@/object-record/read-only/utils/isOneToManyRelationFieldReadOnlyDueToTargetUpdatePermission';
 import { type FieldDefinition } from '@/object-record/record-field/ui/types/FieldDefinition';
@@ -47,7 +46,7 @@ export const isRecordFieldReadOnly = ({
 
   const isComputedField =
     isDefined(fieldDefinition) &&
-    isDefined(getFieldComputedExpression(fieldDefinition.metadata.settings));
+    isDefined(fieldDefinition.metadata.computation);
 
   // Keep system-object standard fields read-only. If the application origin
   // cannot be resolved yet, fail closed until metadata finishes loading.

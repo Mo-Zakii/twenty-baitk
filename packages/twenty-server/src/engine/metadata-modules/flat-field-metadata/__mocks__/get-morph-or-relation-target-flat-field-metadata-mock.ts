@@ -62,6 +62,7 @@ export const getRelationTargetFlatFieldMetadataMock = ({
     relationTargetFieldMetadataId,
     relationTargetObjectMetadataId,
     morphId: null,
+    computation: null,
     ...overrides,
     defaultValue: null,
     options: null,

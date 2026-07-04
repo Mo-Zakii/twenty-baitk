@@ -7,7 +7,6 @@ import {
 
 import { FieldMetadataExceptionCode } from 'src/engine/metadata-modules/field-metadata/field-metadata.exception';
 import { type FlatFieldMetadataValidationError } from 'src/engine/metadata-modules/flat-field-metadata/types/flat-field-metadata-validation-error.type';
-import { getFlatFieldMetadataComputedExpression } from 'src/engine/metadata-modules/flat-field-metadata/utils/get-flat-field-metadata-computed-expression.util';
 import { type UniversalFlatEntityMaps } from 'src/engine/workspace-manager/workspace-migration/universal-flat-entity/types/universal-flat-entity-maps.type';
 import { type UniversalFlatFieldMetadata } from 'src/engine/workspace-manager/workspace-migration/universal-flat-entity/types/universal-flat-field-metadata.type';
 
@@ -68,27 +67,27 @@ const isComputedFlatFieldMetadataReferencingField = ({
     return false;
   }
 
-  const universalSettings = candidateFlatFieldMetadata.universalSettings;
+  const { computation } = candidateFlatFieldMetadata;
 
-  if (!isDefined(universalSettings)) {
+  if (
+    !isDefined(computation) ||
+    candidateFlatFieldMetadata.objectMetadataUniversalIdentifier !==
+      flatFieldMetadataToMutate.objectMetadataUniversalIdentifier
+  ) {
     return false;
   }
 
-  const computedExpression =
-    getFlatFieldMetadataComputedExpression(universalSettings);
+  const referencedExpressions =
+    computation.mode === 'EXPRESSION'
+      ? [computation.expression]
+      : Object.values(computation.expressionBySubField);
 
-  if (
-    computedExpression !== null &&
-    candidateFlatFieldMetadata.objectMetadataUniversalIdentifier ===
-      flatFieldMetadataToMutate.objectMetadataUniversalIdentifier
-  ) {
-    return isFormulaExpressionReferencingFieldName({
-      expression: computedExpression,
+  return referencedExpressions.some((expression) =>
+    isFormulaExpressionReferencingFieldName({
+      expression,
       fieldName: flatFieldMetadataToMutate.name,
-    });
-  }
-
-  return false;
+    }),
+  );
 };
 
 const isFormulaExpressionReferencingFieldName = ({

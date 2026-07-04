@@ -65,6 +65,7 @@ export const getDefaultFlatFieldMetadata = ({
         ? !createFieldInput.isUIReadOnly
         : true),
     morphId: null,
+    computation: createFieldInput.computation ?? null,
     applicationUniversalIdentifier: flatApplication.universalIdentifier,
     objectMetadataUniversalIdentifier,
     relationTargetObjectMetadataUniversalIdentifier: null,

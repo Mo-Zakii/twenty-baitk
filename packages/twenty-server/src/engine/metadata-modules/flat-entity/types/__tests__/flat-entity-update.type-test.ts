@@ -25,6 +25,7 @@ type Assertions = [
       | 'isUIEditable'
       | 'isNullable'
       | 'universalSettings'
+      | 'computation'
     >
   >,
   Expect<

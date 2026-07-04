@@ -49,6 +49,7 @@ export const useUpdateOneFieldMetadataItem = () => {
       | 'defaultValue'
       | 'options'
       | 'settings'
+      | 'computation'
       | 'isLabelSyncedWithName'
     >;
   }): Promise<

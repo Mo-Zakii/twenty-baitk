@@ -36,7 +36,7 @@ const createComputedFlatFieldMetadata = ({
     universalIdentifier: 'field-computed',
     objectMetadataUniversalIdentifier,
     type: FieldMetadataType.NUMBER,
-    universalSettings: { computedExpression },
+    computation: { mode: 'EXPRESSION', expression: computedExpression },
   }) as UniversalFlatFieldMetadata;
 
 describe('validateFlatFieldMetadataIsNotReferencedByComputedField', () => {

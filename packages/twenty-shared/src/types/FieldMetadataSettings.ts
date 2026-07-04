@@ -22,26 +22,18 @@ export type FieldNumberVariant = 'number' | 'percentage';
 
 export type FieldCurrencyFormat = 'short' | 'full';
 
-// Computation mode: when set, the column is a Postgres generated column derived
-// from same-record fields; the field type stays the representation structure
-type FieldMetadataComputedSettings = {
-  computedExpression?: string;
-};
-
-type FieldMetadataNumberSettings = FieldMetadataComputedSettings & {
+type FieldMetadataNumberSettings = {
   dataType?: NumberDataType;
   decimals?: number;
   type?: FieldNumberVariant;
 };
 
-type FieldMetadataCurrencySettings = FieldMetadataComputedSettings & {
+type FieldMetadataCurrencySettings = {
   format?: FieldCurrencyFormat;
   decimals?: number;
 };
 
-type FieldMetadataBooleanSettings = FieldMetadataComputedSettings;
-
-type FieldMetadataTextSettings = FieldMetadataComputedSettings & {
+type FieldMetadataTextSettings = {
   displayedMaxRows?: number;
 };
 
@@ -49,7 +41,7 @@ type FieldMetadataDateSettings = {
   displayFormat?: DateDisplayFormat;
 };
 
-type FieldMetadataDateTimeSettings = FieldMetadataComputedSettings & {
+type FieldMetadataDateTimeSettings = {
   displayFormat?: DateDisplayFormat;
 };
 
@@ -73,7 +65,6 @@ type FieldMetadataFilesSettings = {
 export type FieldMetadataSettingsMapping = {
   [FieldMetadataType.NUMBER]: FieldMetadataNumberSettings | null;
   [FieldMetadataType.CURRENCY]: FieldMetadataCurrencySettings | null;
-  [FieldMetadataType.BOOLEAN]: FieldMetadataBooleanSettings | null;
   [FieldMetadataType.DATE]: FieldMetadataDateSettings | null;
   [FieldMetadataType.DATE_TIME]: FieldMetadataDateTimeSettings | null;
   [FieldMetadataType.TEXT]: FieldMetadataTextSettings | null;

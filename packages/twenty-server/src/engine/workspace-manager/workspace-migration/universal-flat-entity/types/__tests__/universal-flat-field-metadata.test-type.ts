@@ -4,6 +4,7 @@ import {
   type HasAllProperties,
 } from 'twenty-shared/testing';
 import {
+  type FieldMetadataComputation,
   type FieldMetadataType,
   type FieldNumberVariant,
   type NullablePartial,
@@ -13,6 +14,7 @@ import {
   type SerializedRelation,
 } from 'twenty-shared/types';
 
+import { type JsonbProperty } from 'src/engine/workspace-manager/workspace-migration/universal-flat-entity/types/jsonb-property.type';
 import { type UniversalFlatFieldMetadata } from 'src/engine/workspace-manager/workspace-migration/universal-flat-entity/types/universal-flat-field-metadata.type';
 
 // Relation field types have defined relation universal identifiers
@@ -120,21 +122,24 @@ type SettingsExpectedResult =
       __JsonbPropertyBrand__?: undefined;
     }
   | {
-      computedExpression?: string | undefined;
       dataType?: NumberDataType | undefined;
       decimals?: number | undefined;
       type?: FieldNumberVariant | undefined;
       __JsonbPropertyBrand__?: undefined;
     }
   | {
-      computedExpression?: string | undefined;
       displayedMaxRows?: number | undefined;
       __JsonbPropertyBrand__?: undefined;
     }
   | null;
 
+type ComputationTestCase = UniversalFlatFieldMetadata['computation'];
+
+type ComputationExpectedResult = JsonbProperty<FieldMetadataComputation> | null;
+
 // oxlint-disable-next-line unused-imports/no-unused-vars
 type Assertions = [
   Expect<Equal<SettingsTestCase, SettingsExpectedResult>>,
   Expect<Equal<NarrowedTestCase, NarrowedExpectedResult>>,
+  Expect<Equal<ComputationTestCase, ComputationExpectedResult>>,
 ];

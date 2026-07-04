@@ -1,6 +1,7 @@
 import { type Expect, type HasAllProperties } from 'twenty-shared/testing';
 import {
   type AllFieldMetadataSettings,
+  type FieldMetadataComputation,
   type FieldMetadataDefaultValueForAnyType,
   type FieldMetadataDefaultValueMapping,
   type FieldMetadataOptionForAnyType,
@@ -122,17 +123,8 @@ type SettingsAssertions = [
   Expect<HasAllProperties<RawJsonFieldMetadata, NotDefinedSettings>>,
   Expect<HasAllProperties<ActorFieldMetadata, NotDefinedSettings>>,
   Expect<HasAllProperties<UUIDFieldMetadata, NotDefinedSettings>>,
+  Expect<HasAllProperties<BooleanFieldMetadata, NotDefinedSettings>>,
 
-  Expect<
-    HasAllProperties<
-      BooleanFieldMetadata,
-      {
-        settings: JsonbProperty<
-          FieldMetadataSettingsMapping[FieldMetadataType.BOOLEAN]
-        >;
-      }
-    >
-  >,
   Expect<
     HasAllProperties<
       TextFieldMetadata,
@@ -249,6 +241,16 @@ type SettingsAssertions = [
     HasAllProperties<
       AbstractFieldMetadata,
       { settings: JsonbProperty<AllFieldMetadataSettings> | null }
+    >
+  >,
+];
+
+// oxlint-disable-next-line unused-imports/no-unused-vars
+type ComputationAssertions = [
+  Expect<
+    HasAllProperties<
+      AbstractFieldMetadata,
+      { computation: JsonbProperty<FieldMetadataComputation> | null }
     >
   >,
 ];

@@ -9,15 +9,16 @@ import { type ColumnType } from 'typeorm';
 
 import { computeMorphOrRelationFieldJoinColumnName } from 'src/engine/metadata-modules/field-metadata/utils/compute-morph-or-relation-field-join-column-name.util';
 import { type CompositeFieldMetadataType } from 'src/engine/metadata-modules/field-metadata/types/composite-field-metadata-type.type';
+import { type ComputedAsExpressions } from 'src/engine/metadata-modules/flat-field-metadata/utils/derive-computed-as-expression-for-flat-field-metadata.util';
 
 import {
   computeColumnName,
   computeCompositeColumnName,
 } from 'src/engine/metadata-modules/field-metadata/utils/compute-column-name.util';
 import { getCompositeTypeOrThrow } from 'src/engine/metadata-modules/field-metadata/utils/get-composite-type-or-throw.util';
-import { getFlatFieldMetadataComputedExpression } from 'src/engine/metadata-modules/flat-field-metadata/utils/get-flat-field-metadata-computed-expression.util';
 import { type FlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/types/flat-field-metadata.type';
 import { isCompositeFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-composite-flat-field-metadata.util';
+import { isComputedFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-computed-flat-field-metadata.util';
 import { isFlatFieldMetadataOfType } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-flat-field-metadata-of-type.util';
 import { isMorphOrRelationFlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/utils/is-morph-or-relation-flat-field-metadata.util';
 import { type FlatObjectMetadata } from 'src/engine/metadata-modules/flat-object-metadata/types/flat-object-metadata.type';
@@ -105,7 +106,7 @@ const generateComputedColumnDefinition = ({
   computedAsExpression,
 }: {
   flatFieldMetadata: FlatFieldMetadata;
-  computedAsExpression?: string;
+  computedAsExpression: string | undefined;
 }): WorkspaceSchemaColumnDefinition => {
   const columnName = computeColumnName(flatFieldMetadata.name);
 
@@ -203,15 +204,13 @@ export const generateColumnDefinitions = ({
   flatObjectMetadata,
   workspaceId,
   searchVectorAsExpression,
-  computedAsExpression,
-  computedCurrencyCodeAsExpression,
+  computedAsExpressions,
 }: {
   flatFieldMetadata: FlatFieldMetadata;
   flatObjectMetadata: FlatObjectMetadata;
   workspaceId: string;
   searchVectorAsExpression?: string;
-  computedAsExpression?: string;
-  computedCurrencyCodeAsExpression?: string;
+  computedAsExpressions?: ComputedAsExpressions;
 }): WorkspaceSchemaColumnDefinition[] => {
   const { tableName, schemaName } = getWorkspaceSchemaContextForMigration({
     workspaceId,
@@ -220,13 +219,8 @@ export const generateColumnDefinitions = ({
 
   if (isCompositeFlatFieldMetadata(flatFieldMetadata)) {
     const compositeType = getCompositeTypeOrThrow(flatFieldMetadata.type);
-    const asExpressionByCompositePropertyName: Record<
-      string,
-      string | undefined
-    > = {
-      amountMicros: computedAsExpression,
-      currencyCode: computedCurrencyCodeAsExpression,
-    };
+    const asExpressionByCompositePropertyName: Record<string, string> =
+      computedAsExpressions?.asExpressionByCompositePropertyName ?? {};
 
     return compositeType.properties.map(
       (property): WorkspaceSchemaColumnDefinition => {
@@ -252,13 +246,11 @@ export const generateColumnDefinitions = ({
     );
   }
 
-  if (
-    getFlatFieldMetadataComputedExpression(flatFieldMetadata.settings) !== null
-  ) {
+  if (isComputedFlatFieldMetadata(flatFieldMetadata)) {
     return [
       generateComputedColumnDefinition({
         flatFieldMetadata,
-        computedAsExpression,
+        computedAsExpression: computedAsExpressions?.asExpression,
       }),
     ];
   }

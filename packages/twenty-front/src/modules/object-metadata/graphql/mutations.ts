@@ -44,6 +44,7 @@ export const CREATE_ONE_OBJECT_METADATA_ITEM = gql`
         defaultValue
         options
         settings
+        computation
         isLabelSyncedWithName
         morphId
         applicationId
@@ -109,6 +110,7 @@ export const CREATE_ONE_FIELD_METADATA_ITEM = gql`
       createdAt
       updatedAt
       settings
+      computation
       defaultValue
       options
       isLabelSyncedWithName
@@ -180,6 +182,7 @@ export const UPDATE_ONE_FIELD_METADATA_ITEM = gql`
       createdAt
       updatedAt
       settings
+      computation
       isLabelSyncedWithName
       applicationId
       object {
@@ -253,6 +256,7 @@ export const DELETE_ONE_FIELD_METADATA_ITEM = gql`
       createdAt
       updatedAt
       settings
+      computation
       applicationId
       object {
         id

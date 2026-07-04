@@ -56,6 +56,8 @@ export {
   richTextValueSchema,
 } from './composite-types/rich-text.composite-type';
 export type { CompositeFieldSubFieldName } from './CompositeFieldSubFieldNameType';
+export type { ComputableCompositeFieldMetadataType } from './ComputableCompositeFieldMetadataType';
+export { COMPUTABLE_COMPOSITE_FIELD_METADATA_TYPES } from './ComputableCompositeFieldMetadataType';
 export type { ComputableFieldMetadataType } from './ComputableFieldMetadataType';
 export { COMPUTABLE_FIELD_METADATA_TYPES } from './ComputableFieldMetadataType';
 export type { ConfigVariableValue } from './ConfigVariableValue';
@@ -77,6 +79,11 @@ export type { ExtractPropertiesThatEndsWithId } from './ExtractPropertiesThatEnd
 export type { ExtractPropertiesThatEndsWithIds } from './ExtractPropertiesThatEndsWithIds';
 export type { ExtractSerializedRelationProperties } from './ExtractSerializedRelationProperties.type';
 export { FeatureFlagKey } from './FeatureFlagKey';
+export type {
+  FieldMetadataExpressionComputation,
+  FieldMetadataExpressionBySubFieldComputation,
+  FieldMetadataComputation,
+} from './FieldMetadataComputation';
 export type {
   FieldMetadataDefaultValueFunctionNames,
   FieldMetadataDefaultValueUuidFunction,

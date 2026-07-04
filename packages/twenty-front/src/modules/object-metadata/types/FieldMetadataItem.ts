@@ -5,6 +5,7 @@ import {
 } from '@/object-record/record-field/ui/types/FieldMetadata';
 
 import {
+  type FieldMetadataComputation,
   type FieldMetadataMultiItemSettings,
   type PartialFieldMetadataItemOption,
 } from 'twenty-shared/types';
@@ -39,6 +40,7 @@ export type FieldMetadataItem = Omit<
     | FieldMetadataMultiItemSettings
     | FieldRelationMetadataSettings
     | null;
+  computation?: FieldMetadataComputation | null;
   isLabelSyncedWithName?: boolean | null;
   morphId?: string | null;
 };

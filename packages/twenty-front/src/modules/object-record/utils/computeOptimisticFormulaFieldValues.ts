@@ -24,12 +24,12 @@ export const computeOptimisticFormulaFieldValues = ({
     (fieldMetadataItem) =>
       fieldMetadataItem.isActive &&
       fieldMetadataItem.type !== FieldMetadataType.CURRENCY &&
-      isDefined(getFieldComputedExpression(fieldMetadataItem.settings)),
+      fieldMetadataItem.computation?.mode === 'EXPRESSION',
   );
 
   for (const computedFieldMetadataItem of activeComputedFieldMetadataItems) {
     const expression = getFieldComputedExpression(
-      computedFieldMetadataItem.settings,
+      computedFieldMetadataItem.computation,
     );
 
     if (!isDefined(expression)) {
