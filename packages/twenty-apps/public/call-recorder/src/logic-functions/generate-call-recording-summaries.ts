@@ -19,16 +19,18 @@ type GenerateCallRecordingSummariesRouteBody = {
   calendarEventIds?: string[];
 };
 
+type Outcomes = typeof GenerateCallRecordingSummariesOutcome;
+
 type GenerateCallRecordingSummariesRouteResult =
   | {
       outcome:
-        | typeof GenerateCallRecordingSummariesOutcome.DISABLED
-        | typeof GenerateCallRecordingSummariesOutcome.NOTHING_SELECTED
-        | typeof GenerateCallRecordingSummariesOutcome.NO_CALL_RECORDINGS_FOR_CALENDAR_EVENTS
-        | typeof GenerateCallRecordingSummariesOutcome.NOTHING_TO_SUMMARIZE;
+        | Outcomes['DISABLED']
+        | Outcomes['NOTHING_SELECTED']
+        | Outcomes['NO_CALL_RECORDINGS_FOR_CALENDAR_EVENTS']
+        | Outcomes['NOTHING_TO_SUMMARIZE'];
     }
   | ({
-      outcome: typeof GenerateCallRecordingSummariesOutcome.PROCESSED;
+      outcome: Outcomes['PROCESSED'];
     } & GenerateMissingCallRecordingSummariesResult);
 
 const hasOwnProperty = <T extends object>(

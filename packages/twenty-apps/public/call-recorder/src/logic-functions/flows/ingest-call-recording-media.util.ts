@@ -20,20 +20,16 @@ type CallRecordingMediaUpdateFields = Pick<
   'audio' | 'video' | 'callRecorderFailureReason'
 >;
 
+type Outcomes = typeof CallRecordingMediaIngestionOutcome;
+
 type IngestMediaArtifactResult =
-  | {
-      outcome: typeof CallRecordingMediaIngestionOutcome.INGESTED;
-      files: CallRecordingMediaFile[];
-    }
-  | { outcome: typeof CallRecordingMediaIngestionOutcome.TOO_LARGE }
-  | { outcome: typeof CallRecordingMediaIngestionOutcome.FAILED };
+  | { outcome: Outcomes['INGESTED']; files: CallRecordingMediaFile[] }
+  | { outcome: Outcomes['TOO_LARGE'] }
+  | { outcome: Outcomes['FAILED'] };
 
 type DownloadMediaFileResult =
   | { outcome: 'downloaded'; buffer: Buffer; contentType: string }
-  | {
-      outcome: typeof CallRecordingMediaIngestionOutcome.TOO_LARGE;
-      sizeBytes: number | undefined;
-    };
+  | { outcome: Outcomes['TOO_LARGE']; sizeBytes: number | undefined };
 
 const MEDIA_DOWNLOAD_TIMEOUT_MS = 120_000;
 

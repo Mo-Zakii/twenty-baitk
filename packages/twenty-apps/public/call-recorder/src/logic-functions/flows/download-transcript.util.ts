@@ -5,17 +5,13 @@ import { retrieveRecallTranscript } from 'src/logic-functions/recall-api/retriev
 
 const TRANSCRIPT_DOWNLOAD_TIMEOUT_MS = 20_000;
 
+type Outcomes = typeof TranscriptDownloadOutcome;
+
 export type DownloadTranscriptResult =
-  | { outcome: typeof TranscriptDownloadOutcome.FILLED; content: unknown }
-  | {
-      outcome: typeof TranscriptDownloadOutcome.FAILED;
-      subCode: string | null;
-    }
-  | { outcome: typeof TranscriptDownloadOutcome.PENDING }
-  | {
-      outcome: typeof TranscriptDownloadOutcome.ERROR;
-      errorMessage: string;
-    };
+  | { outcome: Outcomes['FILLED']; content: unknown }
+  | { outcome: Outcomes['FAILED']; subCode: string | null }
+  | { outcome: Outcomes['PENDING'] }
+  | { outcome: Outcomes['ERROR']; errorMessage: string };
 
 export const downloadTranscript = async ({
   transcriptId,

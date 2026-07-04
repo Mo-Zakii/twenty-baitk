@@ -17,14 +17,12 @@ type ReconcileUpcomingCalendarEventsRouteBody = {
   calendarEventIds?: unknown;
 };
 
+type Outcomes = typeof ReconcileUpcomingCalendarEventsOutcome;
+
 type ReconcileUpcomingCalendarEventsRouteResult =
-  | {
-      outcome:
-        | typeof ReconcileUpcomingCalendarEventsOutcome.NOTHING_SELECTED
-        | typeof ReconcileUpcomingCalendarEventsOutcome.NOTHING_TO_RECONCILE;
-    }
+  | { outcome: Outcomes['NOTHING_SELECTED'] | Outcomes['NOTHING_TO_RECONCILE'] }
   | ({
-      outcome: typeof ReconcileUpcomingCalendarEventsOutcome.PROCESSED;
+      outcome: Outcomes['PROCESSED'];
     } & ReconcileUpcomingCalendarEventBatchesResult);
 
 const toIdList = (value: unknown): string[] =>
