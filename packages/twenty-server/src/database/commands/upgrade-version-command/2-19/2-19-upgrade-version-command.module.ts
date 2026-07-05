@@ -3,16 +3,29 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { WorkspaceIteratorModule } from 'src/database/commands/command-runners/workspace-iterator.module';
 import { BackfillWorkspaceCustomApplicationRegistrationCommand } from 'src/database/commands/upgrade-version-command/2-19/2-19-workspace-command-1782853718000-backfill-workspace-custom-application-registration.command';
+import { BackfillDeterministicFieldUniversalIdentifiersCommand } from 'src/database/commands/upgrade-version-command/2-19/2-19-workspace-command-1783100000000-backfill-deterministic-field-universal-identifiers.command';
 import { ApplicationModule } from 'src/engine/core-modules/application/application.module';
 import { ApplicationEntity } from 'src/engine/core-modules/application/application.entity';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
+import { FieldMetadataEntity } from 'src/engine/metadata-modules/field-metadata/field-metadata.entity';
+import { WorkspaceMetadataVersionModule } from 'src/engine/metadata-modules/workspace-metadata-version/workspace-metadata-version.module';
+import { WorkspaceCacheModule } from 'src/engine/workspace-cache/workspace-cache.module';
 
 @Module({
   imports: [
     ApplicationModule,
-    TypeOrmModule.forFeature([WorkspaceEntity, ApplicationEntity]),
+    TypeOrmModule.forFeature([
+      WorkspaceEntity,
+      ApplicationEntity,
+      FieldMetadataEntity,
+    ]),
+    WorkspaceCacheModule,
     WorkspaceIteratorModule,
+    WorkspaceMetadataVersionModule,
   ],
-  providers: [BackfillWorkspaceCustomApplicationRegistrationCommand],
+  providers: [
+    BackfillWorkspaceCustomApplicationRegistrationCommand,
+    BackfillDeterministicFieldUniversalIdentifiersCommand,
+  ],
 })
 export class V2_19_UpgradeVersionCommandModule {}
