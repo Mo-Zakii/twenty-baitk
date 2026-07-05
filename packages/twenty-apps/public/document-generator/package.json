@@ -1,6 +1,6 @@
 {
   "name": "@twentyhq/document-generator",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Create reusable document templates and generate personalized documents from your CRM records",
   "license": "MIT",
   "engines": {
