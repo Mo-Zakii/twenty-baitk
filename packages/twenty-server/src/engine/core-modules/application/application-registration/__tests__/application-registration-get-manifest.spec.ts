@@ -78,9 +78,9 @@ describe('ApplicationRegistrationService.getManifest', () => {
     await expect(service.getManifest(registration)).resolves.toEqual(
       manifestFromStorage,
     );
-    expect(
-      applicationManifestStorageService.readManifest,
-    ).toHaveBeenCalledWith('application-manifest/registration-id/1.0.0.json');
+    expect(applicationManifestStorageService.readManifest).toHaveBeenCalledWith(
+      'application-manifest/registration-id/1.0.0.json',
+    );
   });
 
   it('should fall back to the database column when the storage read fails', async () => {
