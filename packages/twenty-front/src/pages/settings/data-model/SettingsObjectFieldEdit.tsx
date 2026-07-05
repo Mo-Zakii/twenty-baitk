@@ -21,7 +21,7 @@ import { FIELD_NAME_MAXIMUM_LENGTH } from '@/settings/data-model/constants/Field
 import { SettingsDataModelFieldDescriptionForm } from '@/settings/data-model/fields/forms/components/SettingsDataModelFieldDescriptionForm';
 import { SettingsDataModelFieldIconLabelForm } from '@/settings/data-model/fields/forms/components/SettingsDataModelFieldIconLabelForm';
 import { SettingsDataModelFieldSettingsFormCard } from '@/settings/data-model/fields/forms/components/SettingsDataModelFieldSettingsFormCard';
-import { SettingsDataModelFieldComputationSummaryCard } from '@/settings/data-model/fields/forms/formula/components/SettingsDataModelFieldComputationSummaryCard';
+import { SettingsDataModelFieldComputationBySubFieldForm } from '@/settings/data-model/fields/forms/formula/components/SettingsDataModelFieldComputationBySubFieldForm';
 import { settingsFieldFormSchema } from '@/settings/data-model/fields/forms/validation-schemas/settingsFieldFormSchema';
 import { type SettingsFieldType } from '@/settings/data-model/types/SettingsFieldType';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
@@ -390,8 +390,11 @@ export const SettingsObjectFieldEdit = () => {
                   title={t`Computation`}
                   description={t`This field is computed from other fields, one expression per sub field`}
                 />
-                <SettingsDataModelFieldComputationSummaryCard
-                  computation={fieldMetadataItem.computation}
+                <SettingsDataModelFieldComputationBySubFieldForm
+                  fieldType={fieldMetadataItem.type}
+                  existingFieldMetadataId={fieldMetadataItem.id}
+                  objectNameSingular={objectMetadataItem.nameSingular}
+                  disabled={readonly}
                 />
               </Section>
             )}

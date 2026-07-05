@@ -11,6 +11,22 @@ type SettingsFieldFormSchemaOptions = {
   sourceObjectMetadataId?: string;
 };
 
+const fieldComputationFormSchema = z.object({
+  computation: z
+    .union([
+      z.object({
+        mode: z.literal('EXPRESSION'),
+        expression: z.string().min(1),
+      }),
+      z.object({
+        mode: z.literal('EXPRESSION_BY_SUB_FIELD'),
+        expressionBySubField: z.record(z.string(), z.string().min(1)),
+      }),
+    ])
+    .nullable()
+    .optional(),
+});
+
 export const settingsFieldFormSchema = (
   options: SettingsFieldFormSchemaOptions = {},
 ) => {
@@ -23,6 +39,7 @@ export const settingsFieldFormSchema = (
     )
     .extend(settingsDataModelFieldDescriptionFormSchema().shape)
     .extend(settingsDataModelFieldTypeFormSchema.shape)
+    .extend(fieldComputationFormSchema.shape)
     .and(settingsDataModelFieldSettingsFormSchema)
     .refine((data) => {
       const formData = data as {
