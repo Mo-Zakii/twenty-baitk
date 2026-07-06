@@ -1,6 +1,20 @@
 # BAITK CRM — Upstream Twenty relationship
 
-This fork is based on [twentyhq/twenty](https://github.com/twentyhq/twenty) `main` (v0.2.1).
+This fork tracks [twentyhq/twenty](https://github.com/twentyhq/twenty) `main`.
+
+## Version numbers (important)
+
+Twenty uses **two** version schemes:
+
+| What you see | Meaning |
+|--------------|---------|
+| `twenty/v2.18.0` (GitHub release tag) | Product release version |
+| `package.json` → `"version": "0.2.1"` | Monorepo workspace semver (not the product version) |
+| `twenty-sdk` / `twenty-client-sdk` → `2.18.x` | **App SDK** — must match the platform release |
+
+**BAITK CRM app** (`baitk-crm`) must pin `twenty-sdk` and `twenty-client-sdk` to the same minor as the platform (currently **2.18.0** on npm). Using `2.10.x` against a `2.18` server causes install/publish/API failures.
+
+Fork base: `main` at July 2026 (~145 commits ahead of the `twenty/v2.18.0` tag).
 
 ## Intentional changes vs upstream
 
