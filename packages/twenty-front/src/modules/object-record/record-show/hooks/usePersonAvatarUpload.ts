@@ -1,4 +1,5 @@
 import { useObjectMetadataItem } from '@/object-metadata/hooks/useObjectMetadataItem';
+import { useObjectMetadataItems } from '@/object-metadata/hooks/useObjectMetadataItems';
 import { CoreObjectNameSingular } from 'twenty-shared/types';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
 import { useApolloClient, useMutation } from '@apollo/client/react';
@@ -10,6 +11,17 @@ import {
 } from '~/generated-metadata/graphql';
 
 export const usePersonAvatarUpload = (personRecordId: string) => {
+  const { objectMetadataItems } = useObjectMetadataItems();
+
+  const hasPersonObject = objectMetadataItems.some(
+    (objectMetadataItem) =>
+      objectMetadataItem.nameSingular === CoreObjectNameSingular.Person,
+  );
+
+  const fallbackObjectNameSingular =
+    objectMetadataItems[0]?.nameSingular ??
+    CoreObjectNameSingular.WorkspaceMember;
+
   const apolloClient = useApolloClient();
   const [uploadFilesFieldFile] = useMutation(UploadFilesFieldFileDocument, {
     client: apolloClient,
@@ -17,15 +29,23 @@ export const usePersonAvatarUpload = (personRecordId: string) => {
   const { updateOneRecord } = useUpdateOneRecord();
 
   const { objectMetadataItem: personMetadata } = useObjectMetadataItem({
-    objectNameSingular: CoreObjectNameSingular.Person,
+    objectNameSingular: hasPersonObject
+      ? CoreObjectNameSingular.Person
+      : fallbackObjectNameSingular,
   });
 
-  const avatarFileFieldMetadataId = personMetadata.fields.find(
-    (field) =>
-      field.type === FieldMetadataType.FILES && field.name === 'avatarFile',
-  )?.id;
+  const avatarFileFieldMetadataId = hasPersonObject
+    ? personMetadata.fields.find(
+        (field) =>
+          field.type === FieldMetadataType.FILES && field.name === 'avatarFile',
+      )?.id
+    : undefined;
 
   const onUploadPicture = async (file: File) => {
+    if (!hasPersonObject) {
+      return;
+    }
+
     assertIsDefinedOrThrow(
       avatarFileFieldMetadataId,
       new Error(t`Avatar file field not found for person object`),

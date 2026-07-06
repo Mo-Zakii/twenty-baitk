@@ -10,6 +10,23 @@ import {
 
 const mockFindOneWorkflowVersion = jest.fn();
 
+const mockObjectMetadataItems = [
+  {
+    id: 'workflow-version-object-id',
+    nameSingular: 'workflowVersion',
+  },
+  {
+    id: 'lead-object-id',
+    nameSingular: 'lead',
+  },
+];
+
+jest.mock('@/object-metadata/hooks/useObjectMetadataItems', () => ({
+  useObjectMetadataItems: () => ({
+    objectMetadataItems: mockObjectMetadataItems,
+  }),
+}));
+
 jest.mock('@/object-record/hooks/useLazyFindOneRecord', () => ({
   useLazyFindOneRecord: () => ({
     findOneRecord: mockFindOneWorkflowVersion,
@@ -40,6 +57,18 @@ const buildBaseContextApi = (
 describe('useEnrichHeadlessCommandContextApiWithWorkflowVersionTriggerInformation', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockObjectMetadataItems.splice(
+      0,
+      mockObjectMetadataItems.length,
+      {
+        id: 'workflow-version-object-id',
+        nameSingular: 'workflowVersion',
+      },
+      {
+        id: 'lead-object-id',
+        nameSingular: 'lead',
+      },
+    );
   });
 
   it('should return enriched context with workflow metadata', async () => {
@@ -117,5 +146,37 @@ describe('useEnrichHeadlessCommandContextApiWithWorkflowVersionTriggerInformatio
     });
 
     expect(enrichedResult).toBeUndefined();
+  });
+
+  it('should return undefined when workflowVersion object metadata is missing', async () => {
+    mockObjectMetadataItems.splice(0, mockObjectMetadataItems.length, {
+      id: 'lead-object-id',
+      nameSingular: 'lead',
+    });
+
+    const store = createStore();
+    const wrapper = getWrapper(store);
+
+    const { result } = renderHook(
+      () =>
+        useEnrichHeadlessCommandContextApiWithWorkflowVersionTriggerInformation(),
+      { wrapper },
+    );
+
+    let enrichedResult: unknown;
+
+    await act(async () => {
+      enrichedResult =
+        await result.current.enrichHeadlessCommandContextApiWithWorkflowVersionTriggerInformation(
+          {
+            headlessEngineCommandContextApi: buildBaseContextApi(),
+            workflowVersionId: 'wf-version-1',
+            availabilityType: CommandMenuItemAvailabilityType.GLOBAL,
+          },
+        );
+    });
+
+    expect(enrichedResult).toBeUndefined();
+    expect(mockFindOneWorkflowVersion).not.toHaveBeenCalled();
   });
 });

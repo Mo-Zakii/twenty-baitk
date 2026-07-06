@@ -1,0 +1,163 @@
+import { defineObject, FieldType } from 'twenty-sdk/define';
+import {
+  INTEGRATION_FIELD_IDS,
+  INTEGRATION_OBJECT_ID,
+  INTEGRATION_TYPE_OPTION_IDS,
+} from 'src/constants/uuids';
+
+export enum IntegrationType {
+  GOOGLE_SHEETS = 'GOOGLE_SHEETS',
+  WEBHOOK = 'WEBHOOK',
+  ZAPIER = 'ZAPIER',
+  META_LEADS = 'META_LEADS',
+  CUSTOM_FORM = 'CUSTOM_FORM',
+}
+
+export { INTEGRATION_OBJECT_ID, INTEGRATION_FIELD_IDS };
+
+export default defineObject({
+  universalIdentifier: INTEGRATION_OBJECT_ID,
+  nameSingular: 'baitkIntegration',
+  namePlural: 'baitkIntegrations',
+  labelSingular: 'Integration',
+  labelPlural: 'Integrations',
+  description: 'Lead source integrations with column mapping',
+  icon: 'IconPlug',
+  labelIdentifierFieldMetadataUniversalIdentifier:
+    INTEGRATION_FIELD_IDS.name,
+  fields: [
+    {
+      universalIdentifier: INTEGRATION_FIELD_IDS.name,
+      type: FieldType.TEXT,
+      name: 'name',
+      label: 'Name',
+      icon: 'IconPlug',
+    },
+    {
+      universalIdentifier: INTEGRATION_FIELD_IDS.integrationType,
+      type: FieldType.SELECT,
+      name: 'integrationType',
+      label: 'Integration Type',
+      icon: 'IconTag',
+      defaultValue: `'${IntegrationType.GOOGLE_SHEETS}'`,
+      options: [
+        {
+          id: INTEGRATION_TYPE_OPTION_IDS.googleSheets,
+          value: IntegrationType.GOOGLE_SHEETS,
+          label: 'Google Sheets',
+          position: 0,
+          color: 'green',
+        },
+        {
+          id: INTEGRATION_TYPE_OPTION_IDS.webhook,
+          value: IntegrationType.WEBHOOK,
+          label: 'Webhook',
+          position: 1,
+          color: 'blue',
+        },
+        {
+          id: INTEGRATION_TYPE_OPTION_IDS.zapier,
+          value: IntegrationType.ZAPIER,
+          label: 'Zapier',
+          position: 2,
+          color: 'orange',
+        },
+        {
+          id: INTEGRATION_TYPE_OPTION_IDS.metaLeads,
+          value: IntegrationType.META_LEADS,
+          label: 'Meta / Facebook Leads',
+          position: 3,
+          color: 'sky',
+        },
+        {
+          id: INTEGRATION_TYPE_OPTION_IDS.customForm,
+          value: IntegrationType.CUSTOM_FORM,
+          label: 'Custom Form',
+          position: 4,
+          color: 'purple',
+        },
+      ],
+    },
+    {
+      universalIdentifier: INTEGRATION_FIELD_IDS.sheetId,
+      type: FieldType.TEXT,
+      name: 'sheetId',
+      label: 'Google Spreadsheet ID',
+      icon: 'IconTable',
+      isNullable: true,
+    },
+    {
+      universalIdentifier: INTEGRATION_FIELD_IDS.googleConnectionId,
+      type: FieldType.TEXT,
+      name: 'googleConnectionId',
+      label: 'Google Connection ID',
+      icon: 'IconBrandGoogle',
+      isNullable: true,
+    },
+    {
+      universalIdentifier: INTEGRATION_FIELD_IDS.sheetTabName,
+      type: FieldType.TEXT,
+      name: 'sheetTabName',
+      label: 'Sheet Tab Name',
+      icon: 'IconLayoutKanban',
+      isNullable: true,
+    },
+    {
+      universalIdentifier: INTEGRATION_FIELD_IDS.lastProcessedRow,
+      type: FieldType.NUMBER,
+      name: 'lastProcessedRow',
+      label: 'Last Processed Row',
+      icon: 'IconRowInsertBottom',
+      isNullable: true,
+      defaultValue: 1,
+    },
+    {
+      universalIdentifier: INTEGRATION_FIELD_IDS.lastSyncAt,
+      type: FieldType.DATE_TIME,
+      name: 'lastSyncAt',
+      label: 'Last Sync At',
+      icon: 'IconClock',
+      isNullable: true,
+    },
+    {
+      universalIdentifier: INTEGRATION_FIELD_IDS.lastSyncError,
+      type: FieldType.TEXT,
+      name: 'lastSyncError',
+      label: 'Last Sync Error',
+      icon: 'IconAlertTriangle',
+      isNullable: true,
+    },
+    {
+      universalIdentifier: INTEGRATION_FIELD_IDS.webhookSecret,
+      type: FieldType.TEXT,
+      name: 'webhookSecret',
+      label: 'Webhook Secret',
+      icon: 'IconKey',
+      isNullable: true,
+    },
+    {
+      universalIdentifier: INTEGRATION_FIELD_IDS.columnMapping,
+      type: FieldType.RAW_JSON,
+      name: 'columnMapping',
+      label: 'Column Mapping',
+      icon: 'IconColumns',
+      isNullable: true,
+    },
+    {
+      universalIdentifier: INTEGRATION_FIELD_IDS.customSourceLabel,
+      type: FieldType.TEXT,
+      name: 'customSourceLabel',
+      label: 'Source Label',
+      icon: 'IconTarget',
+      isNullable: true,
+    },
+    {
+      universalIdentifier: INTEGRATION_FIELD_IDS.isActive,
+      type: FieldType.BOOLEAN,
+      name: 'isActive',
+      label: 'Active',
+      icon: 'IconCheck',
+      defaultValue: true,
+    },
+  ],
+});

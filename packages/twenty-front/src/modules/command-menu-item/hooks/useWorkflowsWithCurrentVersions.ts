@@ -1,6 +1,7 @@
 import { CoreObjectNameSingular } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 
+import { useObjectMetadataItems } from '@/object-metadata/hooks/useObjectMetadataItems';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
 import {
   type Workflow,
@@ -25,8 +26,28 @@ const getCurrentVersionId = (workflow: Workflow): string | undefined => {
 export const useWorkflowsWithCurrentVersions = (
   workflowIds: string[],
 ): WorkflowWithCurrentVersion[] => {
+  const { objectMetadataItems } = useObjectMetadataItems();
+
+  const hasWorkflowObject = objectMetadataItems.some(
+    (objectMetadataItem) =>
+      objectMetadataItem.nameSingular === CoreObjectNameSingular.Workflow,
+  );
+  const hasWorkflowVersionObject = objectMetadataItems.some(
+    (objectMetadataItem) =>
+      objectMetadataItem.nameSingular === CoreObjectNameSingular.WorkflowVersion,
+  );
+
+  const fallbackObjectNameSingular =
+    objectMetadataItems[0]?.nameSingular ??
+    CoreObjectNameSingular.WorkspaceMember;
+
+  const skipWorkflowFetch =
+    !hasWorkflowObject || workflowIds.length === 0;
+
   const { records: workflows } = useFindManyRecords<Workflow>({
-    objectNameSingular: CoreObjectNameSingular.Workflow,
+    objectNameSingular: hasWorkflowObject
+      ? CoreObjectNameSingular.Workflow
+      : fallbackObjectNameSingular,
     filter: { id: { in: workflowIds } },
     recordGqlFields: {
       id: true,
@@ -40,18 +61,27 @@ export const useWorkflowsWithCurrentVersions = (
         createdAt: true,
       },
     },
-    skip: workflowIds.length === 0,
+    skip: skipWorkflowFetch,
   });
 
   const currentVersionIds = workflows
     .map(getCurrentVersionId)
     .filter(isDefined);
 
+  const skipWorkflowVersionFetch =
+    !hasWorkflowVersionObject || currentVersionIds.length === 0;
+
   const { records: currentVersions } = useFindManyRecords<WorkflowVersion>({
-    objectNameSingular: CoreObjectNameSingular.WorkflowVersion,
+    objectNameSingular: hasWorkflowVersionObject
+      ? CoreObjectNameSingular.WorkflowVersion
+      : fallbackObjectNameSingular,
     filter: { id: { in: currentVersionIds } },
-    skip: currentVersionIds.length === 0,
+    skip: skipWorkflowVersionFetch,
   });
+
+  if (!hasWorkflowObject || !hasWorkflowVersionObject) {
+    return [];
+  }
 
   return workflows
     .map((workflow) => {

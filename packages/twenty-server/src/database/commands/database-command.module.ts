@@ -6,6 +6,7 @@ import { CronRegisterAllCommand } from 'src/database/commands/cron-register-all.
 import { DataSeedWorkspaceCommand } from 'src/database/commands/data-seed-dev-workspace.command';
 import { SecretEncryptionRotationModule } from 'src/database/commands/secret-encryption-rotation/secret-encryption-rotation.module';
 import { GenerateInstanceCommandCommand } from 'src/database/commands/generate-instance-command.command';
+import { BaitkRemoveNonBaitkObjectsCommand } from 'src/database/commands/baitk-remove-non-baitk-objects.command';
 import { InstallPreInstalledAppsCommand } from 'src/database/commands/install-pre-installed-apps.command';
 import { InstanceCommandGenerationService } from 'src/database/commands/instance-command-generation.service';
 import { ListOrphanedWorkspaceEntitiesCommand } from 'src/database/commands/list-and-delete-orphaned-workspace-entities.command';
@@ -108,6 +109,7 @@ import { AutomatedTriggerModule } from 'src/modules/workflow/workflow-trigger/au
     UpgradeStatusCommand,
     RebuildApplicationDefaultDepsCommand,
     InstallPreInstalledAppsCommand,
+    BaitkRemoveNonBaitkObjectsCommand,
     provideWorkspaceScopedRepository(RoleEntity),
   ],
 })

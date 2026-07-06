@@ -32,7 +32,7 @@ export const ComposeEmailCommand = () => {
 
   const { records: bulkPersonRecords, loading: bulkLoading } =
     useFindManyRecords({
-      objectNameSingular: CoreObjectNameSingular.Person,
+      objectNameSingular: CoreObjectNameSingular.WorkspaceMember,
       filter: graphqlFilter ?? undefined,
       recordGqlFields: { id: true, emails: { primaryEmail: true } },
       limit: MAX_EMAIL_RECIPIENTS,

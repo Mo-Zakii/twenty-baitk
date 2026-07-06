@@ -1,3 +1,4 @@
+import { useObjectMetadataItems } from '@/object-metadata/hooks/useObjectMetadataItems';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
 import { useFindOneRecord } from '@/object-record/hooks/useFindOneRecord';
 import { CoreObjectNameSingular } from 'twenty-shared/types';
@@ -11,17 +12,40 @@ export const useResolveDefaultEmailRecipient = ({
   objectNameSingular,
   recordId,
 }: UseResolveDefaultEmailRecipientParams) => {
+  const { objectMetadataItems } = useObjectMetadataItems();
+
+  const fallbackObjectNameSingular =
+    objectMetadataItems[0]?.nameSingular ??
+    CoreObjectNameSingular.WorkspaceMember;
+
+  const hasPersonObject = objectMetadataItems.some(
+    (objectMetadataItem) =>
+      objectMetadataItem.nameSingular === CoreObjectNameSingular.Person,
+  );
+  const hasCompanyObject = objectMetadataItems.some(
+    (objectMetadataItem) =>
+      objectMetadataItem.nameSingular === CoreObjectNameSingular.Company,
+  );
+  const hasOpportunityObject = objectMetadataItems.some(
+    (objectMetadataItem) =>
+      objectMetadataItem.nameSingular === CoreObjectNameSingular.Opportunity,
+  );
+
   const isPerson = objectNameSingular === CoreObjectNameSingular.Person;
   const isCompany = objectNameSingular === CoreObjectNameSingular.Company;
   const isOpportunity =
     objectNameSingular === CoreObjectNameSingular.Opportunity;
 
-  const skipPerson = !isPerson || !recordId;
-  const skipCompanyPeople = !isCompany || !recordId;
-  const skipOpportunity = !isOpportunity || !recordId;
+  const skipPerson = !isPerson || !recordId || !hasPersonObject;
+  const skipCompanyPeople =
+    !isCompany || !recordId || !hasPersonObject || !hasCompanyObject;
+  const skipOpportunity =
+    !isOpportunity || !recordId || !hasOpportunityObject;
 
   const { record: personRecord, loading: personLoading } = useFindOneRecord({
-    objectNameSingular: CoreObjectNameSingular.Person,
+    objectNameSingular: hasPersonObject
+      ? CoreObjectNameSingular.Person
+      : fallbackObjectNameSingular,
     objectRecordId: recordId ?? '',
     recordGqlFields: { id: true, emails: { primaryEmail: true } },
     skip: skipPerson,
@@ -29,7 +53,9 @@ export const useResolveDefaultEmailRecipient = ({
 
   const { records: companyPeople, loading: companyPeopleLoading } =
     useFindManyRecords({
-      objectNameSingular: CoreObjectNameSingular.Person,
+      objectNameSingular: hasPersonObject
+        ? CoreObjectNameSingular.Person
+        : fallbackObjectNameSingular,
       filter: { companyId: { eq: recordId ?? '' } },
       recordGqlFields: { id: true, emails: { primaryEmail: true } },
       limit: 1,
@@ -38,7 +64,9 @@ export const useResolveDefaultEmailRecipient = ({
 
   const { record: opportunityRecord, loading: opportunityLoading } =
     useFindOneRecord({
-      objectNameSingular: CoreObjectNameSingular.Opportunity,
+      objectNameSingular: hasOpportunityObject
+        ? CoreObjectNameSingular.Opportunity
+        : fallbackObjectNameSingular,
       objectRecordId: recordId ?? '',
       recordGqlFields: {
         id: true,

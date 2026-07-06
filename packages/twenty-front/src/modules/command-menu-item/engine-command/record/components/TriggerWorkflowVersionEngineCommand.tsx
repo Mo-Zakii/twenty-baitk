@@ -2,6 +2,7 @@ import { HeadlessEngineCommandWrapperEffect } from '@/command-menu-item/engine-c
 import { useHeadlessCommandContextApi } from '@/command-menu-item/engine-command/hooks/useHeadlessCommandContextApi';
 import { buildTriggerWorkflowVersionPayloads } from '@/command-menu-item/engine-command/utils/buildTriggerWorkflowVersionPayloads';
 import { isHeadlessTriggerWorkflowVersionCommandContextApi } from '@/command-menu-item/engine-command/utils/isHeadlessTriggerWorkflowVersionCommandContextApi';
+import { useObjectMetadataItems } from '@/object-metadata/hooks/useObjectMetadataItems';
 import { objectMetadataItemsSelector } from '@/object-metadata/states/objectMetadataItemsSelector';
 import { DEFAULT_QUERY_PAGE_SIZE } from '@/object-record/constants/DefaultQueryPageSize';
 import { useLazyFetchAllRecords } from '@/object-record/hooks/useLazyFetchAllRecords';
@@ -13,7 +14,7 @@ import {
   CoreObjectNameSingular,
   type RecordGqlOperationFilter,
 } from 'twenty-shared/types';
-import { isNonEmptyArray } from 'twenty-shared/utils';
+import { isDefined, isNonEmptyArray } from 'twenty-shared/utils';
 
 export const TriggerWorkflowVersionEngineCommand = () => {
   const mountedCommandState = useHeadlessCommandContextApi();
@@ -25,13 +26,20 @@ export const TriggerWorkflowVersionEngineCommand = () => {
     );
   }
 
+  const { objectMetadataItems } = useObjectMetadataItems();
+
   const noMatchFilter: RecordGqlOperationFilter = { id: { in: [] } };
 
+  const objectNameSingularForFetch =
+    mountedCommandState.objectMetadataItem?.nameSingular ??
+    objectMetadataItems[0]?.nameSingular ??
+    CoreObjectNameSingular.WorkspaceMember;
+
   const { fetchAllRecords } = useLazyFetchAllRecords({
-    objectNameSingular:
-      mountedCommandState.objectMetadataItem?.nameSingular ??
-      CoreObjectNameSingular.Person,
-    filter: mountedCommandState.graphqlFilter ?? noMatchFilter,
+    objectNameSingular: objectNameSingularForFetch,
+    filter: isDefined(mountedCommandState.objectMetadataItem)
+      ? (mountedCommandState.graphqlFilter ?? noMatchFilter)
+      : noMatchFilter,
     limit: DEFAULT_QUERY_PAGE_SIZE,
   });
 

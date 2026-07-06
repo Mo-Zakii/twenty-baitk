@@ -6,6 +6,16 @@ import { CoreObjectNameSingular } from 'twenty-shared/types';
 const mockUseFindOneRecord = jest.fn();
 const mockUseFindManyRecords = jest.fn();
 
+jest.mock('@/object-metadata/hooks/useObjectMetadataItems', () => ({
+  useObjectMetadataItems: () => ({
+    objectMetadataItems: [
+      { nameSingular: CoreObjectNameSingular.Person },
+      { nameSingular: CoreObjectNameSingular.Company },
+      { nameSingular: CoreObjectNameSingular.Opportunity },
+    ],
+  }),
+}));
+
 jest.mock('@/object-record/hooks/useFindOneRecord', () => ({
   useFindOneRecord: (args: unknown) => mockUseFindOneRecord(args),
 }));

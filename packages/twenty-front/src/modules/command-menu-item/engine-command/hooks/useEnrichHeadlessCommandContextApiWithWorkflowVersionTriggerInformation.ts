@@ -4,6 +4,7 @@ import {
   type HeadlessCommandContextApi,
   type HeadlessEngineCommandContextApi,
 } from '@/command-menu-item/engine-command/types/HeadlessCommandContextApi';
+import { useObjectMetadataItems } from '@/object-metadata/hooks/useObjectMetadataItems';
 import { useLazyFindOneRecord } from '@/object-record/hooks/useLazyFindOneRecord';
 import { type WorkflowVersion } from '@/workflow/types/Workflow';
 import { CoreObjectNameSingular } from 'twenty-shared/types';
@@ -24,14 +25,34 @@ type EnrichParams = {
 
 export const useEnrichHeadlessCommandContextApiWithWorkflowVersionTriggerInformation =
   () => {
+    const { objectMetadataItems } = useObjectMetadataItems();
+
+    const hasWorkflowVersionObject = objectMetadataItems.some(
+      (objectMetadataItem) =>
+        objectMetadataItem.nameSingular ===
+        CoreObjectNameSingular.WorkflowVersion,
+    );
+
+    const fallbackObjectNameSingular =
+      objectMetadataItems[0]?.nameSingular ??
+      CoreObjectNameSingular.WorkspaceMember;
+
     const { findOneRecord: findOneWorkflowVersion } =
       useLazyFindOneRecord<WorkflowVersionRecord>({
-        objectNameSingular: CoreObjectNameSingular.WorkflowVersion,
-        recordGqlFields: { id: true, workflowId: true, trigger: true },
+        objectNameSingular: hasWorkflowVersionObject
+          ? CoreObjectNameSingular.WorkflowVersion
+          : fallbackObjectNameSingular,
+        recordGqlFields: hasWorkflowVersionObject
+          ? { id: true, workflowId: true, trigger: true }
+          : { id: true },
       });
 
     const fetchWorkflowVersion = useCallback(
       async (versionId: string): Promise<WorkflowVersionRecord | undefined> => {
+        if (!hasWorkflowVersionObject) {
+          return undefined;
+        }
+
         let record: WorkflowVersionRecord | undefined;
 
         await findOneWorkflowVersion({
@@ -43,7 +64,7 @@ export const useEnrichHeadlessCommandContextApiWithWorkflowVersionTriggerInforma
 
         return record;
       },
-      [findOneWorkflowVersion],
+      [findOneWorkflowVersion, hasWorkflowVersionObject],
     );
 
     const enrichHeadlessCommandContextApiWithWorkflowVersionTriggerInformation =

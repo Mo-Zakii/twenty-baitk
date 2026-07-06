@@ -12,9 +12,7 @@ describe('title-utils', () => {
       'Sign in or Create an account',
     );
     expect(getPageTitleFromPath('/invite/:workspaceInviteHash')).toBe('Invite');
-    expect(getPageTitleFromPath('/workspace-activation')).toBe(
-      'Create Workspace',
-    );
+    expect(getPageTitleFromPath('/create/workspace')).toBe('Create Workspace');
     expect(getPageTitleFromPath('/create/profile')).toBe('Create Profile');
     expect(getPageTitleFromPath('/settings/objects/opportunities')).toBe(
       'Data model - Settings',
@@ -43,16 +41,13 @@ describe('title-utils', () => {
     expect(getPageTitleFromPath('/settings/accounts/emails/:accountUuid')).toBe(
       'Account - Settings',
     );
-    expect(getPageTitleFromPath('/settings/billing/plans')).toBe(
-      'Billing - Settings',
-    );
     expect(getPageTitleFromPath('/settings/members')).toBe(
       'Members - Settings',
     );
     expect(getPageTitleFromPath('/settings/general')).toBe(
       'General - Settings',
     );
-    expect(getPageTitleFromPath('/')).toBe('Twenty');
-    expect(getPageTitleFromPath('/random')).toBe('Twenty');
+    expect(getPageTitleFromPath('/')).toBe('BAITK CRM');
+    expect(getPageTitleFromPath('/random')).toBe('BAITK CRM');
   });
 });

@@ -5,6 +5,7 @@ import { getImageAbsoluteURI, isDefined } from 'twenty-shared/utils';
 import { Avatar } from 'twenty-ui/data-display';
 import { UndecoratedLink } from 'twenty-ui/navigation';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
+import { BaitkCrmWordmark } from '@/auth/components/BaitkCrmWordmark';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { useRedirectToDefaultDomain } from '~/modules/domain-manager/hooks/useRedirectToDefaultDomain';
 
@@ -15,6 +16,15 @@ type LogoProps = {
   onClick?: () => void;
   to?: AppPath;
 };
+
+const StyledDefaultLogoContainer = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin-bottom: ${themeCssVariables.spacing[4]};
+  margin-top: ${themeCssVariables.spacing[4]};
+  width: 100%;
+`;
 
 const StyledContainer = styled.div`
   height: ${themeCssVariables.spacing[12]};
@@ -75,19 +85,21 @@ export const Logo = ({
 
   const isUsingDefaultLogo = !isDefined(primaryLogo);
 
+  if (isUsingDefaultLogo) {
+    return (
+      <StyledDefaultLogoContainer onClick={() => onClick?.()}>
+        <UndecoratedLink to={to} onClick={() => redirectToDefaultDomain()}>
+          <BaitkCrmWordmark />
+        </UndecoratedLink>
+      </StyledDefaultLogoContainer>
+    );
+  }
+
   return (
     <StyledContainer onClick={() => onClick?.()}>
-      {isUsingDefaultLogo ? (
-        <UndecoratedLink to={to} onClick={() => redirectToDefaultDomain()}>
-          <StyledPrimaryLogo
-            style={{ backgroundImage: `url(${primaryLogoUrl})` }}
-          />
-        </UndecoratedLink>
-      ) : (
-        <StyledPrimaryLogo
-          style={{ backgroundImage: `url(${primaryLogoUrl})` }}
-        />
-      )}
+      <StyledPrimaryLogo
+        style={{ backgroundImage: `url(${primaryLogoUrl})` }}
+      />
       {isDefined(secondaryLogoUrl) ? (
         <StyledSecondaryLogoContainer>
           <StyledSecondaryLogo src={secondaryLogoUrl} />

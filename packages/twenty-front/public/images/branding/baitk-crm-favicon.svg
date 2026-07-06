@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    path { fill: #000000; }
+    @media (prefers-color-scheme: dark) {
+      path { fill: #ffffff; }
+    }
+  </style>
+  <g>
+  <g transform="translate(0.960,49.920) scale(0.007228,-0.007228)">
+    <path d="M2239 0V112H1804L1465 323H551V1055H2239V1378H551L129 956V0Z"/>
+  </g>
+  <g transform="translate(18.003,49.920) scale(0.007228,-0.007228)">
+    <path d="M551 1V465H1507L1803 296V1H2239V437L1889 609L2239 915V1379H551L129 957V1ZM551 788V1056H1817V577H1410L1100 788Z"/>
+  </g>
+  <g transform="translate(35.119,49.920) scale(0.007228,-0.007228)">
+    <path d="M606 0V1055H1520L1731 872V0H2153V1055H3067L3278 872V0H3700V956L3278 1378H2198L1968 1169L1425 1166L1124 1378H184V0Z"/>
+  </g>
+  </g>
+</svg>
